@@ -1,0 +1,66 @@
+\documentclass{article}
+\title{Disposition}
+\author{Marc de Bever}
+\begin{document}
+\maketitle
+\section{Einleitung}
+Dieses Kapitel beschreibt das Projekt als ganzes. Das heisst es beschreibt wer das Projekt ausgeschrieben hat, wieso sie dieses Projekt ausgeschrieben haben und was das Projekt genau ist. Zusätzlich steht in diesem Kapitel, dass dieses Projekt eine Bachelor Thesis der FHNW ist und wie es mit den Projekten von Fabio zusammenhängt.
+
+\section{System Varian}
+Dieses Kapitel beschreibt, wie das System der Varian aufgebaut ist. Zuerst gibt es einen groben Überblick und danach wird in den Unterkapiteln genauer auf die einzelnen Komponenten eingegangen. Die Unterkapiteln sind noch nicht vollständig aufgelistet
+\subsection{Kommunikation Sensor - XI Computer}
+Dieses Kapitel beschreibt, wie die Sensoren mit dem XI-Computer kommunizieren. Dies beinhaltet die physikalische Ebene mit dem SerDes, den MGTs und dem SFP; den Gleichspannungsfreien Leitungscode, einer abgeänderten 8b10b-Code; dem Bootprotokoll; und dem Protokoll um Daten zu übertragen.
+
+\section{Unser System}
+Dieses Kapitel soll einen Top-Down Blick auf unser System geben. Dies beinhaltet die Blockschaltbilder und die wichtigsten Entscheidungen der Komponenten, wie des FPGA. Zudem definiert es die Schnittstellen zwischen der PC Software und dem ARM Core, sowie die zwischen dem ARM Core und dem FPGA
+
+\section{Hardware}
+Dieses Kapitel beschreibt die Hardware des Projektes. Es gibt einen kurzen Überblick und verweist auf die Dokumentation von Fabio und die anderen Dokumente für genauere Angaben.
+
+\section{Software}
+Dieses Kapitel ist der Hauptteil der Arbeit. Es beschreibt den FPGA und Mikrocontroller Code, welcher auf dem SoC läuft und wie dieser getestet wurde. Es ist in die Unterkapitel ARM, FPGA und PC Software aufgeteilt.
+\subsection{ARM}
+Dieses Kapitel beschreibt, welche Komponenten des ARM Cores gebraucht werden und wie sie konfiguriert sind, wie die Module des ARM Cores aufgebaut sind und auf welchem Core sie laufen.
+\subsection{FPGA}
+Dieses Kapitel beschreibt die Module, welche auf dem FPGA laufen.
+\subsection{PC Software}
+Dieses Kapitel beschreibt die Software, welche auf dem PC läuft, welche den Imager konfiguriert.
+
+
+\section{Config}
+Dieses Kapitel beschreibt, wie zusätzliche Konfigurationen hinzugefügt werden können.
+
+\section{Theorie}
+Dieses Kapitel beschreibt Funktionalitäten, welche nicht von mir entwickelt worden sind, sondern schon auf dem Modul vorhanden sind. In den einzelnen Unterkapiteln listet es die wichtigsten Konzepte und referenziert auf die Dokumentationen um genauere Informationen zu erhalten. Diese Unterkapitel sollen dazu dienen, dass in den anderen Kapiteln auf diese referenziert werden kann.
+\subsection{Enclustra Mercury PE5 Modul}
+\subsection{Xilinx SoC}
+\subsection{Bootvorgang}
+\subsection{Standart Konfiguration der CPU}
+\subsection{AXI}
+
+Eventuell werden noch folgende weitere Spezifikationen und Komponenten be\-schrieben.
+\subsection{ARM R5}
+\subsection{USB Standart}
+\subsection{USB Treiber}
+\subsection{SerDes}
+\subsection{MGT}
+\subsection{Debugging}
+
+
+
+\section{Entwicklungsumgebung}
+Dieses Kapitel beschreibt, wie der Code für den SoC entwickelt werden kann und worden ist. Dies beinhaltet Vitis, Vivado und wie das Programm auf den SoC geladen werden kann.
+
+\section{Erläuterungen}
+Dieses Kapitel listet alle Abkürzungen mit den Bedeutungen und einer kurzen Erklärung auf. Zudem erklärt es, wie die verschiedenen Fachwörter zu verstehen sind.
+
+ARM Core,
+Core,
+FPGA,
+Sensor,
+XI-Computer,
+SoC,
+Imager,
+
+
+\end{document}

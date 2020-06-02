@@ -1,0 +1,58 @@
+\documentclass{standalone}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usetikzlibrary{calc}
+
+\begin{document}
+
+\begin{tikzpicture}
+    %\draw[step=1cm,gray,very thin] (-4.9,-4.9) grid (4.9,4.9);
+    %XU5
+    \node[ draw, minimum height=2cm, minimum width=2cm, align=center] (xu) at (0,0) {Mercury\\XU5};
+    %UI
+    \node[draw] at (-1,3) (ui) {UI};
+    %JTAG
+    \node[draw] at (1,3) (jtag) {JTAG};
+    %SD
+    \node[draw] at (3,0) (sd) {SD};
+    %SerDes
+    \node[draw] at (-1.5, -2) (serdes) {SerDes};
+    %MUX
+    \def\xmux {.25cm} %MUX amount of longer input sides
+    \node at (0,-3.5) (mux) {MUX};
+    \draw (mux.south west) -- (mux.south east) -- ([xshift=\xmux]mux.north east) -- ([xshift=-\xmux]mux.north west) -- (mux.south west);
+    %SFP
+    \node[draw] at (0,-4.5) (sfp) {SFP};
+    %USB0
+    \node[draw] at (-3,0) (usb0) {USB0};
+
+    %FPGA - UI
+    \draw ($(xu.north west)!1/3!(xu.north east)$) |- ({ui} |- {$(xu.north)!0.5!(ui.south)$}) -- (ui);
+    %FPGA - JTAG
+    \draw ($(xu.north west)!2/3!(xu.north east)$) |- ({jtag} |- {$(xu.north)!0.5!(jtag.south)$}) -- (jtag);
+    %FPGA - SD
+    \draw (xu) -- (sd);
+    %FPGA - SerDes
+    \draw ($(xu.south west)!1/3!(xu.south east)$) |- ({serdes} |- {$(xu.south)!0.5!(serdes.north)$}) -- (serdes);
+    \def\xi{.25cm}; %xshift of Datainputs of MUX
+    %SerDes - MUX
+    \draw (serdes.south) |- ([xshift=\xi]{mux.north west} |- {$(mux.north west)!0.5!(serdes.south)$}) -- ([xshift=\xi]mux.north west);
+    %FPGA - MUX
+    \draw ([xshift=-\xi]mux.north east) -- ([xshift=-\xi]xu.south -| mux.north east);
+    \def\xline {.25cm}; %xshift of line MUX - XU5
+    \def\yMuxXu {.25cm}; %yshift from south east corner of XU5
+    \draw ([xshift=\xmux/2]mux.east) -| ([shift={(\xline, \yMuxXu)}]xu.south east) -- ([yshift=\yMuxXu]xu.south east); 
+    %MUX - SFP
+    \draw (mux) -- (sfp); 
+    %FPGA - SFP
+    \def\xlineSfp {0.5cm} %xshift of line SFP - XU5
+    \def\yMuxSfp {.5cm}; %yshift from south east corner of XU5
+    \draw (sfp.east) -| ([shift={(\xlineSfp, \yMuxSfp)}]xu.south east) -- ([yshift=\yMuxSfp]xu.south east);
+    %FPGA - USB0
+    \draw (usb0) -- (xu);
+
+    
+\end{tikzpicture}
+
+\end{document}
