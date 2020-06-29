@@ -4,21 +4,25 @@
 \author{Marc de Bever}
 \begin{document}
 \maketitle
+\tableofcontents
+
 \section{Einleitung}
-Dieses Dokument ist ein Teil der Dokumentation des Projektes Imager-Emulator. Dieses Projekt besteht aus drei Teilprojekten. Genauer gesagt besteht es aus zwei Bachelor Thesen und einem Projekt 5 (P5). Das P5 und eine Thesis laufen parallel und die zweite Thesis wird ein Semester später durchgeführt. Diese Dokumentation ist diejenige von der ersten Thesis, welche parallel mit dem Projekt 5 durchgeführt wird. Das Projekt 5 und die zweite Thesis wird von Fabio Nardo geschrieben und diese Dokumentation ist von mir, Marc de Bever, geschrieben. 
+Dieses Dokument ist ein Teil der Dokumentation des Projektes Imager-Emu\-lator. Dieses Projekt besteht aus drei Teilprojekten. 
+Genauer gesagt besteht es aus zwei Bachelor Thesen und einem Projekt 5 (P5). 
+Das P5 und eine Thesis laufen parallel und die zweite Thesis wird ein Semester später durchgeführt. Diese Dokumentation ist diejenige von der ersten Thesis, welche parallel mit dem Projekt 5 durchgeführt wird. Das Projekt 5 und die zweite Thesis wird von Fabio Nardo geschrieben und diese Dokumentation ist von mir, Marc de Bever, geschrieben. 
 
 Das Projekt Imager-Emulator wurde von der Firma Varian Medical Systems ausgeschrieben. Das Ziel is es, einen Sensor zu emulieren, welcher Bilder über eine nicht standardisierte LWL Schnittstelle an einen Computer weitergibt. Der Computer, welcher die Bilder des Sensors entgegen nimmt, rechnet diverse Algorithmen, die unteranderem Pixelfehler erkennen und korrigieren können. Jedoch kann dem Sensor nicht gesagt werden, \textit{mach mal 'nen Pixelfehler}. Daher braucht es ein Gerät, um Bilder mit Pixelfehlern zu generieren und an den Computer zu senden. Und dieses Gerät ist das Produkt dieses Projektes.
 
 Die Aufteilung unter den Teilprojekten ist wie folgt. Im P5 soll die Hardware entwickelt werden, in der ersten Thesis,also diesem, sollen die Entwicklungsumgebungen und das FPGA-Modul in Betrieb genommen werden. Sowie auch die Schnittstellen zu programmieren. Die zweite Thesis soll schlussendlich die Kommunikation mit dem Computer implementieren, die Pixelfehler in die Bilder einbauen und das ganze Projekt abschliessen.
 
-Das erste Kapitel dieses Berichtes beschreibt wie das Sensorsystem der Varian aufgebaut ist. Zuerst gibt es einen groben Überblick und danach geht es genauer auf die Teilbereiche ein.
-Das zweite Kapitel beschreibt wie unser System aussehen soll. Es gibt einen top-down Blick auf das Projekt. Das heisst es beinhaltet die Blockschaltbilder. Zusätzlich beschreibt es die Wahl der wichtigsten Komponenten, wie das FPGA-Modul.
+Das zweite Kapitel dieses Berichtes beschreibt wie das Sensorsystem der Varian aufgebaut ist. Zuerst gibt es einen groben Überblick und danach geht es genauer auf die Teilbereiche ein.
+Das dritte Kapitel beschreibt wie unser System aussehen soll. Es gibt einen top-down Blick auf das Projekt. Das heisst es beinhaltet die Blockschaltbilder. Zusätzlich beschreibt es die Wahl der wichtigsten Komponenten, wie das FPGA-Modul.
 
-Das dritte Kapitel beschreibt die Hardware, da dies die Arbeit des Projektes 5 ist, werden in diesem Kapitel nur die wichtigsten Punkte erwähnt, welche für das Programmieren relevant sind.
+Das vierte Kapitel beschreibt die Hardware, da dies die Arbeit des Projektes 5 ist, werden in diesem Kapitel nur die wichtigsten Punkte erwähnt, welche für das Programmieren relevant sind.
 
-Das dritte Kapitel beschreibt die Software. Diese besteht aus drei Teilen, dem Code für den Mikrocontroller, dem Code für den FPGA und dem Code für die PC-Applikation.
-Das vierte Kapitel beschreibt wie zusätzliche Konfigurationen nachträglich hinzugefügt werden können.
-Das fünfte Kapitel beschreibt die Entwicklungsumgebung.
+Das fünfte Kapitel beschreibt die Software. Diese besteht aus drei Teilen, dem Code für den Mikrocontroller, dem Code für den FPGA und dem Code für die PC-Applikation.
+Das sechste Kapitel beschreibt wie zusätzliche Konfigurationen nachträglich hinzugefügt werden können.
+Das siebte Kapitel beschreibt die Entwicklungsumgebung.
 
 Und das letzte Kapitel beschreibt Funktionalitäten, welche nicht von uns entwickelt worden sind, sondern schon auf dem Modul vorhanden sind.
 
@@ -39,11 +43,11 @@ Dieses Kapitel ist der Hauptteil der Arbeit. Es beschreibt den FPGA und Mikrocon
 Dieses Kapitel beschreibt, welche Komponenten des ARM Cores gebraucht werden und wie sie konfiguriert sind, wie die Module des ARM Cores aufgebaut sind und auf welchem Core sie laufen.
 \subsection{FPGA}
 Dieses Kapitel beschreibt die Module, welche auf dem FPGA laufen.
-\subsection{PC Software}
+\subsection{PC Applikation}
 Dieses Kapitel beschreibt die Software, welche auf dem PC läuft, welche den Imager konfiguriert.
 
 
-\section{Config}
+\section{Konfiguration}
 Dieses Kapitel beschreibt, wie zusätzliche Konfigurationen hinzugefügt werden können.
 
 \section{Entwicklungsumgebung}
