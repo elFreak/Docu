@@ -1,5 +1,7 @@
 \documentclass{article}
-
+\usepackage{todonotes}
+\usepackage{pbox}
+\usepackage{tablefootnote}
 \title{Disposition}
 \author{Marc de Bever}
 \begin{document}
@@ -11,9 +13,11 @@ Dieses Dokument ist ein Teil der Dokumentation des Projektes Imager-Emu\-lator. 
 Genauer gesagt besteht es aus zwei Bachelor Thesen und einem Projekt 5 (P5). 
 Das P5 und eine Thesis laufen parallel und die zweite Thesis wird ein Semester später durchgeführt. Diese Dokumentation ist diejenige von der ersten Thesis, welche parallel mit dem Projekt 5 durchgeführt wird. Das Projekt 5 und die zweite Thesis wird von Fabio Nardo geschrieben und diese Dokumentation ist von mir, Marc de Bever, geschrieben. 
 
-Das Projekt Imager-Emulator wurde von der Firma Varian Medical Systems ausgeschrieben. Das Ziel is es, einen Sensor zu emulieren, welcher Bilder über eine nicht standardisierte LWL Schnittstelle an einen Computer weitergibt. Der Computer, welcher die Bilder des Sensors entgegen nimmt, rechnet diverse Algorithmen, die unteranderem Pixelfehler erkennen und korrigieren können. Jedoch kann dem Sensor nicht gesagt werden, \textit{mach mal 'nen Pixelfehler}. Daher braucht es ein Gerät, um Bilder mit Pixelfehlern zu generieren und an den Computer zu senden. Und dieses Gerät ist das Produkt dieses Projektes.
+Das Projekt Imager-Emulator wurde von der Firma Varian Medical Systems ausgeschrieben. Das Ziel is es, einen Sensor zu emulieren. Der Sensor gibt Bilder über eine nicht standardisierte LWL Schnittstelle an einen Computer weiter. Der Computer, welcher die Bilder des Sensors entgegen nimmt, rechnet diverse Algorithmen, die unteranderem Pixelfehler erkennen und korrigieren. Jedoch kann dem Sensor nicht gesagt werden, \textit{mach mal 'nen Pixelfehler}. Daher braucht es ein Gerät, um Bilder mit Pixelfehlern zu generieren und an den Computer zu senden. Und dieses Gerät soll in diesem Projekt entwickelt werden.
 
-Die Aufteilung unter den Teilprojekten ist wie folgt. Im P5 soll die Hardware entwickelt werden, in der ersten Thesis,also diesem, sollen die Entwicklungsumgebungen und das FPGA-Modul in Betrieb genommen werden. Sowie auch die Schnittstellen zu programmieren. Die zweite Thesis soll schlussendlich die Kommunikation mit dem Computer implementieren, die Pixelfehler in die Bilder einbauen und das ganze Projekt abschliessen.
+Da dieses Projekt eine spezielle Konstellation hat, ist die Aufteilung der Teilprojekte wie folgt. Im P5 soll die Hardware entwickelt werden. In der ersten Thesis, also dieser Arbeit, sollen die Entwicklungsumgebungen und das FPGA-Modul in Betrieb genommen werden. Sowie sollen auch die Schnittstellen programmiert werden. Die zweite Thesis soll schlussendlich die Kommunikation mit dem Computer implementieren, die Pixelfehler in die Bilder einbauen und das ganze Projekt abschliessen.
+
+Dieser Bericht dient zum einen dazu, dass im weiterführenden Projekt verstanden werden kann, wie die Entwicklungsumgebung und Schnittstellen funktioniert, deren Möglichkeiten und Grenzen. Zum anderen Dient er um zu diese Arbeit als Thesis zu dokumentieren. Der Bericht ist folgendermassen aufgebaut.
 
 Das zweite Kapitel dieses Berichtes beschreibt wie das Sensorsystem der Varian aufgebaut ist. Zuerst gibt es einen groben Überblick und danach geht es genauer auf die Teilbereiche ein.
 Das dritte Kapitel beschreibt wie unser System aussehen soll. Es gibt einen top-down Blick auf das Projekt. Das heisst es beinhaltet die Blockschaltbilder. Zusätzlich beschreibt es die Wahl der wichtigsten Komponenten, wie das FPGA-Modul.
@@ -28,14 +32,47 @@ Und das letzte Kapitel beschreibt Funktionalitäten, welche nicht von uns entwic
 
 \section{System Varian}
 Dieses Kapitel beschreibt, wie das System der Varian aufgebaut ist. Zuerst gibt es einen groben Überblick und danach wird in den Unterkapiteln genauer auf die einzelnen Komponenten eingegangen. Die Unterkapiteln sind noch nicht vollständig aufgelistet
+
+Der Sensor ist Teil eines medizinischen Röntgengeräts. Genauer gesagt ist er ein Bildsensor für Röntgenstrahlung. Der Sensor ist über eine LWL Schnittstelle an einen Computer angeschlossen. Diesen Computer nennen wir XI-Computer. \todo{wieso XI?} Der Sensor besteht grob gesagt aus dem Bildsensor, welcher die Röntgenstrahlung in ein elektrisches Signal umwandelt und einem FPGA, welcher die Bild daten des Bildsensors entgegen nimmt und diese, auf Befehl, an den XI-Computer weiterleitet. Der XI-Computer steuert den Sensor. Beim einschalten Konfiguriert er den FPGA auf dem Sensor und danach gibt er Befehle an den Sensor. Es gibt verschiedene Versionen des Sensors. Die Unterschiede liegen darin, das die Bildübertragung der älteren Versionen über einen dem FPGA externen Serialisierer/Deserialisierer(SerDes) läuft und die der neueren die internen multi-gigabit Transceiver(MGT) des FPGA benützen. Der Vorteil der MGTs ist, das sie schneller sind. Jedoch geschiet die Konfiguration des FPGAs immer noch durch den externen SerDes, da der FPGA zuerst konfiguriert sein muss, damit die MGTs laufen. Damit der XI-Computer weiss, welche Sensorversion angehängt ist, liegt mittels pull-up und pull-down Widerständen ein Code am SerDes. Anhand von diesem Code weiss der XI-Computer, welche Firmware er auf den FPGA laden muss und welche Befehle er unterstützt.  Die Tabelle \ref{tab:sensorVersionen} zeigt die verschiedenen Sensorversionen und deren Eckdaten.
+
+\begin{table}[tb]
+    \caption{Eckdaten der verschiedenen Sensorversionen der Varian}
+    \begin{tabular}{|l|l|l|l|l|}
+        \hline
+        \textbf{Imager} & \textbf{Auflösung} & \textbf{Pattern}$^1$ & \textbf{FPGA} & \textbf{Schnittstelle} \\
+        \hline
+        DMI$^2$ & 1280x1280 & \pbox[t]{10cm}{b10’1010’1010’1010’1010\\XI: 0xAAA} & \pbox[t]{10cm}{Spartan 3\\XC3S200} & externer SerDes\\
+        \hline
+        \pbox[t]{10cm}{RTI 1.0$^2$\\(RTI4343L)} & 1280x1280 & \pbox[t]{10cm}{b10’1010’1010’1010’1010\\XI: 0xAAA} & \pbox[t]{10cm}{Spartan 3\\XC3S200} & externer SerDes\\
+        \hline
+        \pbox[t]{10cm}{RTI 2.0\\(RTI4343iL)} & 3072x3072 &\pbox[t]{10cm}{b10’1010’1001’0101’0101\\XI: 0x955} & \pbox[t]{10cm}{Artix 7\\XC7A100T} & \pbox[t]{10cm}{aktuell:\\externer Serdes\\zukünftig:\\MGT(GTP)} \\
+        \hline
+        \pbox[t]{10cm}{RTIXL 1.0\\(RTI8643L)} & 6144x3072 & \pbox[t]{10cm}{b10’1010’1001’1001’0101\\XI: 0x995} & \pbox[t]{10cm}{Artix 7\\XC7A200T} & \pbox[t]{10cm}{externer SerDes\\und MGT(GTP)}\\
+        \hline
+       \end{tabular}
+       \begin{tabular}{l}
+        $^1$\pbox[t]{10cm}{Das XI wertet nur die letzten 12 bit des Pattern aus. Um das DC-Balancing zu erreichen, müssen trotzdem alle 18 bits korrekt gesendet werden.}\\
+        $^2$DMI und RTI 1.0 besitzen exakt die gleiche Elektronik.
+
+       \end{tabular}
+    \label{tab:sensorVersionen}
+    \end{table}
+
+\subsection{Bootvorgang Imager}
 \subsection{Kommunikation Sensor - XI Computer}
 Dieses Kapitel beschreibt, wie die Sensoren mit dem XI-Computer kommunizieren. Dies beinhaltet die physikalische Ebene mit dem SerDes, den MGTs und dem SFP; den Gleichspannungsfreien Leitungscode, einer abgeänderten 8b10b-Code; dem Bootprotokoll; und dem Protokoll um Daten zu übertragen.
 
 \section{Unser System}
 Dieses Kapitel soll einen Top-Down Blick auf unser System geben. Dies beinhaltet die Blockschaltbilder und die wichtigsten Entscheidungen der Komponenten, wie des FPGA. Zudem definiert es die Schnittstellen zwischen der PC Software und dem ARM Core, sowie die zwischen dem ARM Core und dem FPGA
 
+\begin{figure}[tb]
+    \missingfigure{Blockdiagramm}
+    \caption{Blockdiagramm}
+    \label{fig:blockdiagramm}
+\end{figure}
+
 \section{Hardware}
-Dieses Kapitel beschreibt die Hardware des Projektes. Es gibt einen kurzen Überblick und verweist auf die Dokumentation von Fabio und die anderen Dokumente für genauere Angaben. Es definiert die Angaben, welche für das Programmieren des SoCs wichtig sind.
+Dieses Kapitel beschreibt die Hardware des Projektes. Es gibt einen kurzen Überblick und verweist auf die Dokumentation von Fabio und die anderen Dokumente für genauere Angaben. Es definiert die Angaben, welche für das Programmieren des SoCs wichtig sind. Und beschreibt die Inbetriebnahme des SoC Teils der Hardware.
 
 \section{Software}
 Dieses Kapitel ist der Hauptteil der Arbeit. Es beschreibt den FPGA und Mikrocontroller Code, welcher auf dem SoC läuft und wie dieser getestet wurde. Es ist in die Unterkapitel ARM, FPGA und PC Software aufgeteilt.
@@ -83,7 +120,10 @@ Imager,
 Imager-Emulator
 
 P5
+LWL
 FPGA
+SerDes
+Imager
 
 
 
