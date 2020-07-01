@@ -30,10 +30,21 @@ Das siebte Kapitel beschreibt die Entwicklungsumgebung.
 
 Und das letzte Kapitel beschreibt Funktionalitäten, welche nicht von uns entwickelt worden sind, sondern schon auf dem Modul vorhanden sind.
 
-\section{System Varian}
-Dieses Kapitel beschreibt, wie das System der Varian aufgebaut ist. Zuerst gibt es einen groben Überblick und danach wird in den Unterkapiteln genauer auf die einzelnen Komponenten eingegangen. Die Unterkapiteln sind noch nicht vollständig aufgelistet
+\section{System}
+Das Projekt kann in drei Systeme unterteilt werden. Das vorhandene System von Varian ist das erste. Das zweite System ist eine Zwischenlösung um mit der Firmware Entwicklung anzufangen, ohne das die eigene Hardware schon vorhanden ist. Und das dritte System ist das endgültige System, welches das System von Varian emuliert.
 
-Der Sensor ist Teil eines medizinischen Röntgengeräts. Genauer gesagt ist er ein Bildsensor für Röntgenstrahlung. Der Sensor ist über eine LWL Schnittstelle an einen Computer angeschlossen. Diesen Computer nennen wir XI-Computer. \todo{wieso XI?} Der Sensor besteht grob gesagt aus dem Bildsensor, welcher die Röntgenstrahlung in ein elektrisches Signal umwandelt und einem FPGA, welcher die Bild daten des Bildsensors entgegen nimmt und diese, auf Befehl, an den XI-Computer weiterleitet. Der XI-Computer steuert den Sensor. Beim einschalten Konfiguriert er den FPGA auf dem Sensor und danach gibt er Befehle an den Sensor. Es gibt verschiedene Versionen des Sensors. Die Unterschiede liegen darin, das die Bildübertragung der älteren Versionen über einen dem FPGA externen Serialisierer/Deserialisierer(SerDes) läuft und die der neueren die internen multi-gigabit Transceiver(MGT) des FPGA benützen. Der Vorteil der MGTs ist, das sie schneller sind. Jedoch geschiet die Konfiguration des FPGAs immer noch durch den externen SerDes, da der FPGA zuerst konfiguriert sein muss, damit die MGTs laufen. Damit der XI-Computer weiss, welche Sensorversion angehängt ist, liegt mittels pull-up und pull-down Widerständen ein Code am SerDes. Anhand von diesem Code weiss der XI-Computer, welche Firmware er auf den FPGA laden muss und welche Befehle er unterstützt.  Die Tabelle \ref{tab:sensorVersionen} zeigt die verschiedenen Sensorversionen und deren Eckdaten.
+\subsection{System Varian}
+\begin{figure}[tb]
+    \missingfigure{Blockdiagramm System Varian}
+    \caption{Blockdiagramm des Systems von Varian}
+    \label{fig:bd_varian}
+\end{figure}
+
+Das System der Varian besteht aus dem Imager und dem XI-Computer. Wobei diese beiden Blöcke Teil eines Röntgengerätes für medizinische Zwecke sind. Der Imager ist ein Bildsensor für Röntgenstrahlen und sendet die die gemessenen Bilder über ein LWL-Kabel zum XI-Computer. Der XI-Computer empfängt die Bilder und lässt diverse Algorithmen darüber laufen. Unter anderem auch Algorithmen zur Erkennung von Pixelfehlern. Das mit den Algorithmen bearbeitete Bild kann wiederum über Ethernet an einen PC gesendet werden.
+
+Um die Bilder vom Sensor auszulesen, zu digitalisieren und zu übertragen, sitzt auf dem Imager ein FPGA. Dieser sendet die Bilder zum XI-Computer entweder über einen vom FPGA internen oder externen Serialisierer/Deserialisierer, kurz SerDes zu einem LWL-Modul. Der FPGA kommuniziert über einen parallelen Bus mit dem externen SerDes und der die beiden SerDes senden ein LVDS Signal zum LWL-Modul. Um zwischen den beiden SerDes auszuwählen, gehen die Tx Signale auf einen Multiplexer und die Rx Signale auf einen Demultiplexer, dieser wird der Einfachheitshalber nur Mux genannt. Das beschriebene System ist im Blockschaltbild in Figure \ref{fig:bd_varian} zu sehen.
+
+Der Vorteil des internen SerDes ist die Geschwindigkeit. Der externe SerDes arbeitet 1.25Gbps und der interne mit 6Gbps. Die älteren Versionen des Imagers arbeiten nur mit dem externen SerDes und die neueren mit internen. Da stellt sich die Frage, wieso externe SerDes überhaupt gebraucht wird. Beim Einschalten des Imagers ist der noch nicht konfiguriert. Somit wird der externe SerDes gebraucht um den FPGA vom XI-Computer zu konfigurieren. Sobald der FPGA konfiguriert ist, schaltet dieser auf den internen SerDes um und kommuniziert mit dem XI-Computer über diesen. Welche SerDes die verschiedenen Versionen des Imagers besitzen ist in Tabelle \ref{tab:sensorVersionen} ersichtlich.
 
 \begin{table}[tb]
     \caption{Eckdaten der verschiedenen Sensorversionen der Varian}
@@ -58,17 +69,47 @@ Der Sensor ist Teil eines medizinischen Röntgengeräts. Genauer gesagt ist er e
     \label{tab:sensorVersionen}
     \end{table}
 
-\subsection{Bootvorgang Imager}
-\subsection{Kommunikation Sensor - XI Computer}
-Dieses Kapitel beschreibt, wie die Sensoren mit dem XI-Computer kommunizieren. Dies beinhaltet die physikalische Ebene mit dem SerDes, den MGTs und dem SFP; den Gleichspannungsfreien Leitungscode, einer abgeänderten 8b10b-Code; dem Bootprotokoll; und dem Protokoll um Daten zu übertragen.
+\subsubsection*{Bootvorgang}
 
-\section{Unser System}
-Dieses Kapitel soll einen Top-Down Blick auf unser System geben. Dies beinhaltet die Blockschaltbilder und die wichtigsten Entscheidungen der Komponenten, wie des FPGA. Zudem definiert es die Schnittstellen zwischen der PC Software und dem ARM Core, sowie die zwischen dem ARM Core und dem FPGA
 
+\subsubsection*{Kommunikation zwischen Imager und XI-Computer}
+
+Man kann zwischen dem XI-Computer und dem Imager von einer Master-Slave Beziehung reden. Der XI-Computer hat die Möglichkeit dem Imager verschiedene Befehle zu senden, welche der Imager daraufhin ausführt. Die Befehle können in drei Gruppen eingeteilt werden. Es gibt die Write-Befehle, welche dem Imager Einstellungen übermitteln, die der Imager in einem Register speichert. Mit den Read-Befehlen kann der XI-Computer diese Einstellungsregister wieder auslesen. Und als letztes gibt es noch den Trigger-Befehl. Die Write-Befehle beinhalten eine Adresse und einen Wert, die Read-Befehle nur einen Wert. Mit dem Trigger-Befehl kann der XI-Computer ein Bild anfordern. Dies hat Vorrang vor Write- und Read-Befehlen. Die genaue Auflistung aller Enstellungsregister und deren Aufgabe kann in der Dokumentation des Imagers entnommen werden. \todo{auf Imager Dokumentation referenzieren}
+
+Der FPGA liest immer Zeile für Zeile die Werte des Sensors aus. Solange kein Trigger-Befehl vom XI-Computer gesendet wird, werden die Werte verworfen. Sobald ein Trigger-Befehl kommt, wartet der FPGA bis er die letzte Zeile ausgelesen hat und verwirft auch diese noch. Wenn der FPGA nun endlich wieder bei der ersten Zeile angelangt, fängt er an das Bild Pixel für Pixel, Zeile für Zeile zu übertragen. Am Anfang des Bildes vor der ersten Zeile sendet der FPGA ein \textit{Frame-Start} Signal. Und vor jeder Zeile überträgt er ein \textit{Line-Start} Signal. Vor der ersten Zeile muss kein zusätzliches Line-Start Signal gesendet werden. Pro Takt wird ein Pixel übertragen. Der FPGA überträgt eine Zeile erst wenn er sie vollständig vom Sensor ausgelesen hat. Somit bleibt zwischen den zu übertragenden Zeilen noch Zeit um etwaige Read-Befehle auszuführen.
+
+Die Read-Befehle werden nur ausgeführt, wenn keine Bilddaten zu senden sind. Daher werden sie in einem FIFO zwischengespeichert und bei Möglichkeit übertragen. Die Read-Befehle dürfen nur zwischen den Zeilen und Bildern übertragen werden und nicht zwischen einzelnen Pixeln. Da es länger dauert eine Zeile von Sensor zu lesen, als eine Zeile an den XI-Computer zu senden, bleibt immer etwas Zeit um die Read-Befehle vom FIFO abzuarbeiten. Wie vor einem neuen Bild und einer neuen Zeile gibt es das \textit{Command} Signal, welches vor den Daten des Read-Befehls gesendet wird. Die Daten eines Read-Befehls bestehen aus den Daten aus dem Einstellungsregister.
+
+\subsubsection*{Wahl des FPGAs}
+
+\subsubsection*{Enclustra Mercury XU5 SoC}
 \begin{figure}[tb]
-    \missingfigure{Blockdiagramm}
-    \caption{Blockdiagramm}
-    \label{fig:blockdiagramm}
+    \missingfigure{Blockdiagramm des XU5}
+    \caption{Blockdiagramm SoC Moduls XU5 von Enclustra}
+    \label{fig:bd_xu5}
+\end{figure}
+
+\subsubsection*{Xilinx Zynq Ultrascale+}
+\begin{figure}[tb]
+    \missingfigure{Blockdiagramm des SoCs}
+    \caption{Blockdiagramm des Zynq Ultrascale+ SoCs von Xilinx}
+    \label{fig:bd_soc}
+\end{figure}
+
+\subsection{Entwicklungssystem}
+
+\subsubsection*{Mercury+ PE1-200 Baseboard}
+\begin{figure}[tb]
+    \missingfigure{Blockdiagramm des Baseboards}
+    \caption{Blockdiagramm des Mercury+ PE1-200 Baseboards von Enclustra}
+    \label{fig:bd_pe1}
+\end{figure}
+
+\subsection{Endsystem}
+\begin{figure}[tb]
+    \missingfigure{Blockdiagramm Endsystems}
+    \caption{Blockdiagramm des Imager-Emulator}
+    \label{fig:bd_top}
 \end{figure}
 
 \section{Hardware}
@@ -122,8 +163,13 @@ Imager-Emulator
 P5
 LWL
 FPGA
-SerDes
 Imager
+XI-Computer
+SerDes
+LVDS
+Rx
+Tx
+FIFO
 
 
 
