@@ -81,13 +81,25 @@ Der FPGA liest immer Zeile für Zeile die Werte des Sensors aus. Solange kein Tr
 Die Read-Befehle werden nur ausgeführt, wenn keine Bilddaten zu senden sind. Daher werden sie in einem FIFO zwischengespeichert und bei Möglichkeit übertragen. Die Read-Befehle dürfen nur zwischen den Zeilen und Bildern übertragen werden und nicht zwischen einzelnen Pixeln. Da es länger dauert eine Zeile von Sensor zu lesen, als eine Zeile an den XI-Computer zu senden, bleibt immer etwas Zeit um die Read-Befehle vom FIFO abzuarbeiten. Wie vor einem neuen Bild und einer neuen Zeile gibt es das \textit{Command} Signal, welches vor den Daten des Read-Befehls gesendet wird. Die Daten eines Read-Befehls bestehen aus den Daten aus dem Einstellungsregister.
 
 \subsubsection*{Wahl des FPGAs}
-
+- Einleitung
+- Anforderungen
+    - 4GB ram
+    - Usb
+    -> Modul mit aufgebautem RAM
+- Vorschläge
+- Auswahl
+    - Grund wieso XU5
+    - Einschränkungen, weil falsche Modulversion
 \subsubsection*{Enclustra Mercury XU5 SoC}
 \begin{figure}[tb]
     \missingfigure{Blockdiagramm des XU5}
     \caption{Blockdiagramm SoC Moduls XU5 von Enclustra}
     \label{fig:bd_xu5}
 \end{figure}
+- Blockdiagram erklären
+    - Nur Blöcke, welche wir auch brauchen
+    - DDR4 Ram 2x
+    - Ultrascale
 
 \subsubsection*{Xilinx Zynq Ultrascale+}
 \begin{figure}[tb]
@@ -95,8 +107,14 @@ Die Read-Befehle werden nur ausgeführt, wenn keine Bilddaten zu senden sind. Da
     \caption{Blockdiagramm des Zynq Ultrascale+ SoCs von Xilinx}
     \label{fig:bd_soc}
 \end{figure}
+- Hardcore Processor System
+- Konfigurierbare Logic(FPGA)
+- Referenz auf Doku
 
 \subsection{Entwicklungssystem}
+- Hardware für xu5 
+    -> da hardware gleichzeitig entwickelt wird
+    - PE1
 
 \subsubsection*{Mercury+ PE1-200 Baseboard}
 \begin{figure}[tb]
@@ -105,15 +123,35 @@ Die Read-Befehle werden nur ausgeführt, wenn keine Bilddaten zu senden sind. Da
     \label{fig:bd_pe1}
 \end{figure}
 
+- Blockdiagram erklären
+    - Nur Blöcke, welche wir auch brauchen
+    - SD
+    - USB
+    - JTAG
+    - UART
+    - IO
+        - Dip configuration
+            - Boot
+- Referenz auf Doku
+
+
 \subsection{Endsystem}
 \begin{figure}[tb]
     \missingfigure{Blockdiagramm Endsystems}
     \caption{Blockdiagramm des Imager-Emulator}
     \label{fig:bd_top}
 \end{figure}
+- Blockdiagram erklären
+    - SFP
+    -> Nicht auf Entwicklungssystem
+    - SD
+    - JTAG
+    - IO
+- Referenz auf Schema und Liste mit Pin und FPGA belegung.
 
 \section{Hardware}
 Dieses Kapitel beschreibt die Hardware des Projektes. Es gibt einen kurzen Überblick und verweist auf die Dokumentation von Fabio und die anderen Dokumente für genauere Angaben. Es definiert die Angaben, welche für das Programmieren des SoCs wichtig sind. Und beschreibt die Inbetriebnahme des SoC Teils der Hardware.
+-- evt. weglassen, da teil in Kapitel System schon genug erläutert.
 
 \section{Software}
 Dieses Kapitel ist der Hauptteil der Arbeit. Es beschreibt den FPGA und Mikrocontroller Code, welcher auf dem SoC läuft und wie dieser getestet wurde. Es ist in die Unterkapitel ARM, FPGA und PC Software aufgeteilt.
@@ -130,6 +168,45 @@ Dieses Kapitel beschreibt, wie zusätzliche Konfigurationen hinzugefügt werden 
 
 \section{Entwicklungsumgebung}
 Dieses Kapitel beschreibt, wie der Code für den SoC entwickelt werden kann und worden ist. Dies beinhaltet Vitis, Vivado und wie das Programm auf den SoC geladen werden kann.
+\subsection{Vivado}
+-Einleitung
+    - Für was ist das Tool
+    - Bennung der einzelnen Schaltflächen(in Bild)
+    - Was kann es alles / aus welchen Teilsystemen besteht es
+    - Doku
+- IP Integrator
+- Simulation
+- Syntetisieren
+- implementieren
+- Hardwaremanager
+
+\subsection{Vitis}
+-Einleitung
+    - Für was ist das Tool
+    - Bennung der einzelnen Schaltflächen(in Bild)
+    - Was kann es alles / aus welchen Teilsystemen besteht es
+    - Doku
+- Plattform Projekt
+- System Projekt
+- Simples Projekt
+- Bootgen
+
+\subsection{Debugging}
+- Debugging auf dem Chip
+- Die debugging Tools
+    - Hardware-Server
+    - Vivado
+        - ILA
+    - Vitis
+        - Gnu debugger
+
+\subsection{Workflow}
+- Files von Vivado
+- Von Vivado in Vitis exportieren
+- Files von Vitis
+- Do nots (Probleme mit Vitis beschreiben)
+- Skripte
+
 
 \section{Theorie}
 Dieses Kapitel beschreibt Funktionalitäten, welche nicht von mir entwickelt worden sind, sondern schon auf dem Modul vorhanden sind. In den einzelnen Unterkapiteln listet es die wichtigsten Konzepte und referenziert auf die Dokumentationen um genauere Informationen zu erhalten. Diese Unterkapitel sollen dazu dienen, dass in den anderen Kapiteln auf diese referenziert werden kann.
