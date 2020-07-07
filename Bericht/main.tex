@@ -81,25 +81,45 @@ Der FPGA liest immer Zeile für Zeile die Werte des Sensors aus. Solange kein Tr
 Die Read-Befehle werden nur ausgeführt, wenn keine Bilddaten zu senden sind. Daher werden sie in einem FIFO zwischengespeichert und bei Möglichkeit übertragen. Die Read-Befehle dürfen nur zwischen den Zeilen und Bildern übertragen werden und nicht zwischen einzelnen Pixeln. Da es länger dauert eine Zeile von Sensor zu lesen, als eine Zeile an den XI-Computer zu senden, bleibt immer etwas Zeit um die Read-Befehle vom FIFO abzuarbeiten. Wie vor einem neuen Bild und einer neuen Zeile gibt es das \textit{Command} Signal, welches vor den Daten des Read-Befehls gesendet wird. Die Daten eines Read-Befehls bestehen aus den Daten aus dem Einstellungsregister.
 
 \subsubsection*{Wahl des FPGAs}
-- Einleitung
-- Anforderungen
-    - 4GB ram
-    - Usb
-    -> Modul mit aufgebautem RAM
-- Vorschläge
-- Auswahl
-    - Grund wieso XU5
-    - Einschränkungen, weil falsche Modulversion
-\subsubsection*{Enclustra Mercury XU5 SoC}
+Das oben beschriebene System soll emuliert werden. Die Vorgabe ist es 100 Bilder speichern zu können. Mit einer maximalen Bildgrösse von 6144x3072x16 ergibt dies etwa 3.5GB Daten. Die Daten sollen via USB auf das Gerät geladen werden und über die LWL-Schnittstelle weiter zum XI-Computer. Daher braucht unser System eine integrierte Hardware für das USB. Die LWL-Schnittstelle ist nicht standardisiert, daher braucht der Emulator eine selber designte Platine. Um Übertragungsgeschwindigkeiten bis 6GBps zu unterstützen muss der Speicher an einer entsprechend schnellen Schnittstelle angeschlossen sein. Da das Layouten einer solchen Schnittstellen zusätzliche Komplikationen, schwierigkeiten und tests verursacht, haben wir uns entschieden ein Modul zu verwenden, auf welchem der Speicher schon angeschlossen ist. Als Recheneinheit ist die Vorgabe einen FPGA von Xilinx zu nehmen. Dies ist vom Auftragsgeber, Varian, vorgegeben, da sie mit diesen FPGAs arbeiten und wir somit auch vorhandenen Code für die LWL-Schnittstelle übernehmen können.
+
+Mit diesen Anforderungen haben wir fünf verschiedene Varianten von den Firmen Enclustra und Trenz-Electronic herausgesucht. Diese sind in der Tabelle \ref{tab:modulVarianten} aufgelistet.
+
+\begin{table}[tb]
+    \caption{Verschiedene Vorschläge für ein FPGA Modul}
+    \begin{tabular}{|l|l|l|l|l|l|}
+        \hline
+        & \textbf{Variante 1} & \textbf{Variante 2} & \textbf{Variante 3} & \textbf{Variante 4} & \textbf{Variante 5} \\ \hline
+
+        \textbf{Hersteller} & Enclustra & Trenz-Electronic & Enclustra & Trenz-Electronic & Enclustra \\ \hline
+        \textbf{Hersteller} & ME-XU5-5EV-2I-D12E & TE0712-02-35-2I & ME-XU5-4EV-1I-D11E-G1 & TE0803-03-4AE11-A & ME-KX1-160-1C-D10
+        \\ \hline
+        \textbf{SDRAM} & 4GB & 1GB & 2GB & 2GB & 1GB \\ \hline
+        \textbf{FPGA} & Zynq Ultrascale+ XCZU5EV-2SFVC784I & Artix-7 & Zynq Ultrascale+ XCZU4EV-1SFVC784I & Zynq Ultrascale+ & Kintex-7
+        \\ \hline
+        \textbf{USB} & 2x USB 3.0 & - & 2x USB 2.0 & - & USB 3.0 (zusätzlicher USB-Chip auf Modul)\\ \hline
+        \textbf{MGT} & 4 MGT 12.5 & 4 GTP & 4 MGT 12.5 & 4 GTH 16.3 & 4 MGT 6.6 \\ \hline
+        \textbf{Preis} & 1010 CHF & 225CHF & 680CHF & 561CHF & 638CHF \\ \hline
+        \textbf{Anz. IO} & 178\\ \hline
+
+
+    \end{tabular}
+    \label{tab:modulVarianten}
+    \end{table}
+
+    Die erste Variante ist die einzige Variante, welche genug Speicherplatz für alle 100 Bilder hat. Dafür ist sie auch die teuerste. Zusätzlich ist das Modul mit USB ausgerüstet. Variante zwei ist die günstigste, aber hat dafür nur 1GB RAM und kein USB. Dies müsste auf mit einem vom Modul seperaten Chip implementiert werden. Varianten drei und vier sind Mittellösungen, sie haben nur 2GB RAM, kosten dafür auch nicht so viel. Wobei Variante vier auch kein USB auf dem Modul besitzt. Variante fünf ist ist etwa gleich teuer wie die Mittellösungen, jedoch hat sie nur 1GB RAM. Dafür ist sie mit einem einfacheren FPGA und einem externen Chip für das USB ausgestattet. Diese Variante wäre einfacher zu programmieren, da es ein weniger komplexes system ist.
+
+    Die Entscheidung haben wir der Varian überlassen. Die Varian hat sich für die Variante 3 entschieden. Grund für diese Entscheidung ist: "Ein weiteres Entwicklungsboard mit einem Artix 7 bringt uns nichts und ein Modul mit einem Zyncscale bringt und auch für später etwas. Ebenfalls gefällt uns, dass bereits DDR4 Memory und USB3.0 vorhanden ist und somit das Preis-Leistungsverhältnis für uns stimmt."
+
+    Jedoch ist uns da noch ein kleiner Fehler unterlaufen. Und somit hat dieses Modul nur USB 2 und kein USB 3.0. Das Problem ist, das Enclustra Aufgrund von Kompatibilitäten bei den Mercury XU5 Modulen zwei verschiedene Bestückungsvarianten hat. Die einen führen die GTR Lines auf die Stecker und die zweite Variante führt mehr IOs anstatt diese Lines auf die Stecker. Dies war uns auch so klar. Jedoch braucht das USB 3.0 die GTR Lines. Daher kann nur das USB 2.0 gebraucht werden, welche seperat heraus geführt werden. Dies war jedoch, obwohl erst im Nachhinein gesehen, auch in Ordung und daher sind wir bei deiser Variante geblieben.
+    
+\subsubsection*{Enclustra Mercury XU5}
 \begin{figure}[tb]
     \missingfigure{Blockdiagramm des XU5}
     \caption{Blockdiagramm SoC Moduls XU5 von Enclustra}
     \label{fig:bd_xu5}
 \end{figure}
-- Blockdiagram erklären
-    - Nur Blöcke, welche wir auch brauchen
-    - DDR4 Ram 2x
-    - Ultrascale
+Der Enclustra Mercury XU5 Soc ist ein SoC Modul, auf welchem ein Xilinx Zynq Ultrascale+ ZU4EV SoC sitzt. Der Ultrascale ist ein System on Chip(SoC), welcher ein FPGA und ein ARM System hat. Das Modul hat zwei SDRAMs, wobei einer am ARM System hängt und der andere am FPGA. Zusätzlich hat es noch vier LEDs. Das USB 2 vom Ultrascale ist per ULPI mit einem externen Chip verbunden, welcher wiederum auf die Stecker geht. Das Blockschaltbild ist in Abbildung \ref{fig:bd_xu5} zu sehen. Das XU5 hat noch weitere Funktionen. Diese sind jedoch für dieses Projekt nicht relevant und sind daher weder auf dem Blockdiagramm noch im Text beschrieben. Für genauere Informationen kann die Dokumentation des Moduls angeschaut werden. \todo{ref auf Doku von XU5}.
 
 \subsubsection*{Xilinx Zynq Ultrascale+}
 \begin{figure}[tb]
@@ -107,14 +127,20 @@ Die Read-Befehle werden nur ausgeführt, wenn keine Bilddaten zu senden sind. Da
     \caption{Blockdiagramm des Zynq Ultrascale+ SoCs von Xilinx}
     \label{fig:bd_soc}
 \end{figure}
-- Hardcore Processor System
-- Konfigurierbare Logic(FPGA)
-- Referenz auf Doku
+
+Der Ultrascale ist ein SoC mit einem ARM system und einem FPGA integriert in einem Chip. Das Blockschaltbild ist in Abbildung \ref{fig:bd_soc} zu sehen. Auch hier sind nur die für das Projekt relevante Blöcke abgebildet. 
+
+Das ARM-System besteht aus zwei ARM Cortex-R5 Kernen, vier Cortex-A53 Kernen und einem Grafikkern. Der Grafikkern ist irrelevant für das Projekt und wird daher komplet verschwiegen. Zusätzlich enthält das ARM-System noch eine Configuration Security Unit (CSU) und eine Platform Management Unit (PMU). Diese beiden Blöcke sind für das Booten und während dem Betrieb für die Sicherheit und das Power Management zuständig.
+
+Das Programm läuft auf einem der beiden R5 Kernen. Der Grund, wieso nicht der A53 Kern verwendet wird, ist, dass der A Kern eine MMU besitzt, welche den Adressraum virtualisiert und somit wesentlich komplexer ist.
+
+Der FPGA ist ein Xilinx FPGA von der Ultrascale+ Familie. Er ist über AXI Busse mit dem ARM-System verbunden.
+
+Es gibt vier Hauptdokumentationen über das SoC. Das Overview, das Technical Referenz Manual(TRM), die Software Developer Guide und das Packaging and Pinouts.\todo{ref auf Dokus}
+
 
 \subsection{Entwicklungssystem}
-- Hardware für xu5 
-    -> da hardware gleichzeitig entwickelt wird
-    - PE1
+Da das XU5 nur ein Modul ist, welches nicht selbstständig läuft, braucht es ein zusätzliches Board. Im verlauf dieses Projektes wird dieses Board entwickelt. Damit jedoch direkt von Anfang an mit dem Entwickeln auf dem SoC begonnen werden kann, haben wir zusätzlich noch das PE1 Board von Enclustra gekauft. 
 
 \subsubsection*{Mercury+ PE1-200 Baseboard}
 \begin{figure}[tb]
@@ -122,17 +148,9 @@ Die Read-Befehle werden nur ausgeführt, wenn keine Bilddaten zu senden sind. Da
     \caption{Blockdiagramm des Mercury+ PE1-200 Baseboards von Enclustra}
     \label{fig:bd_pe1}
 \end{figure}
-
-- Blockdiagram erklären
-    - Nur Blöcke, welche wir auch brauchen
-    - SD
-    - USB
-    - JTAG
-    - UART
-    - IO
-        - Dip configuration
-            - Boot
-- Referenz auf Doku
+Das PE1 Board ist ein Baseboard welches alle zusätzliche nötigen funktionen für das XU5 zu verfügungstellt.
+Das Blockdiagramm ist in Abbildung \ref{fig:bd_pe1} zu sehen. Auch hier sind wieder nur die für uns relevanten Blöcke zu sehen.
+\todo{ref auf Doku}
 
 
 \subsection{Endsystem}
