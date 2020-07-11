@@ -2,7 +2,7 @@
 \usepackage{todonotes}
 \usepackage{pbox}
 \usepackage{tablefootnote}
-\title{Disposition}
+\title{Dokumentation}
 \author{Marc de Bever}
 \begin{document}
 \maketitle
@@ -19,16 +19,13 @@ Da dieses Projekt eine spezielle Konstellation hat, ist die Aufteilung der Teilp
 
 Dieser Bericht dient zum einen dazu, dass im weiterführenden Projekt verstanden werden kann, wie die Entwicklungsumgebung und Schnittstellen funktioniert, deren Möglichkeiten und Grenzen. Zum anderen Dient er um zu diese Arbeit als Thesis zu dokumentieren. Der Bericht ist folgendermassen aufgebaut.
 
-Das zweite Kapitel dieses Berichtes beschreibt wie das Sensorsystem der Varian aufgebaut ist. Zuerst gibt es einen groben Überblick und danach geht es genauer auf die Teilbereiche ein.
-Das dritte Kapitel beschreibt wie unser System aussehen soll. Es gibt einen top-down Blick auf das Projekt. Das heisst es beinhaltet die Blockschaltbilder. Zusätzlich beschreibt es die Wahl der wichtigsten Komponenten, wie das FPGA-Modul.
+Das zweite Kapitel beschreibt wie die Systeme aussehen. Dafür beschreibt es das Projekt mit drei verschiedenen Systemen. Als erstes das, welches von der Varian schon vorhanden ist. Dieses soll durch dieses Projekt emuliert werden. Das zweite System ist eine Zwischenlösung, damit gleichzeitig die Hardware und die Software entwickelt werden kann. Und das letzte System ist das endgültige Gerät, welches den Sensor der Varian emuliert. Somit soll es einen Top-Down-Blick auf das Projekt gaben. Zusätzlich beschreibt es die Wahl des wichtigsten Komponenten, das FPGA-Modul.
 
-Das vierte Kapitel beschreibt die Hardware, da dies die Arbeit des Projektes 5 ist, werden in diesem Kapitel nur die wichtigsten Punkte erwähnt, welche für das Programmieren relevant sind.
+Das dritte Kapitel beschreibt die verschiednen Hardware ein wenig genauer. Die Hardware des engültigen Systemes ist die Arbeit des Projektes 5. Daher werden ist diese in dessen Bericht genauer Beschrieben. In diesem Kapitel sind nur die wichtigsten Punkte erwähnt, welche für das Programmieren relevant sind.
 
-Das fünfte Kapitel beschreibt die Software. Diese besteht aus drei Teilen, dem Code für den Mikrocontroller, dem Code für den FPGA und dem Code für die PC-Applikation.
-Das sechste Kapitel beschreibt wie zusätzliche Konfigurationen nachträglich hinzugefügt werden können.
-Das siebte Kapitel beschreibt die Entwicklungsumgebung.
-
-Und das letzte Kapitel beschreibt Funktionalitäten, welche nicht von uns entwickelt worden sind, sondern schon auf dem Modul vorhanden sind.
+Das vierte Kapitel beschreibt die Software. Diese besteht aus drei Teilen, dem Code für den Mikrocontroller, dem Code für den FPGA und dem Code für die PC-Applikation.
+Das fünfte Kapitel beschreibt wie zusätzliche Konfigurationen nachträglich hinzugefügt werden können.
+Und zu guter Letzt, das sechste Kapitel beschreibt die Entwicklungsumgebung.
 
 \section{System}
 Das Projekt kann in drei Systeme unterteilt werden. Das vorhandene System von Varian ist das erste. Das zweite System ist eine Zwischenlösung um mit der Firmware Entwicklung anzufangen, ohne das die eigene Hardware schon vorhanden ist. Und das dritte System ist das endgültige System, welches das System von Varian emuliert.
@@ -69,12 +66,9 @@ Der Vorteil des internen SerDes ist die Geschwindigkeit. Der externe SerDes arbe
     \label{tab:sensorVersionen}
     \end{table}
 
-\subsubsection*{Bootvorgang}
-
-
 \subsubsection*{Kommunikation zwischen Imager und XI-Computer}
 
-Man kann zwischen dem XI-Computer und dem Imager von einer Master-Slave Beziehung reden. Der XI-Computer hat die Möglichkeit dem Imager verschiedene Befehle zu senden, welche der Imager daraufhin ausführt. Die Befehle können in drei Gruppen eingeteilt werden. Es gibt die Write-Befehle, welche dem Imager Einstellungen übermitteln, die der Imager in einem Register speichert. Mit den Read-Befehlen kann der XI-Computer diese Einstellungsregister wieder auslesen. Und als letztes gibt es noch den Trigger-Befehl. Die Write-Befehle beinhalten eine Adresse und einen Wert, die Read-Befehle nur einen Wert. Mit dem Trigger-Befehl kann der XI-Computer ein Bild anfordern. Dies hat Vorrang vor Write- und Read-Befehlen. Die genaue Auflistung aller Enstellungsregister und deren Aufgabe kann in der Dokumentation des Imagers entnommen werden. \todo{auf Imager Dokumentation referenzieren}
+Man kann zwischen dem XI-Computer und dem Imager von einer Master-Slave Beziehung reden. Der XI-Computer hat die Möglichkeit dem Imager verschiedene Befehle zu senden, welche der Imager daraufhin ausführt. Die Befehle können in drei Gruppen eingeteilt werden. Es gibt die Write-Befehle, welche dem Imager Einstellungen übermitteln, die der Imager in einem Register speichert. Mit den Read-Befehlen kann der XI-Computer diese Einstellungsregister wieder auslesen. Und als letztes gibt es noch den Trigger-Befehl. Die Write-Befehle beinhalten eine Adresse und einen Wert, die Read-Befehle nur einen Wert. Mit dem Trigger-Befehl kann der XI-Computer ein Bild anfordern. Dies hat Vorrang vor Write- und Read-Befehlen. Die genaue Auflistung aller Einstellungsregister und deren Aufgabe kann in der Dokumentation des Imagers entnommen werden. \todo{auf Imager Dokumentation referenzieren}
 
 Der FPGA liest immer Zeile für Zeile die Werte des Sensors aus. Solange kein Trigger-Befehl vom XI-Computer gesendet wird, werden die Werte verworfen. Sobald ein Trigger-Befehl kommt, wartet der FPGA bis er die letzte Zeile ausgelesen hat und verwirft auch diese noch. Wenn der FPGA nun endlich wieder bei der ersten Zeile angelangt, fängt er an das Bild Pixel für Pixel, Zeile für Zeile zu übertragen. Am Anfang des Bildes vor der ersten Zeile sendet der FPGA ein \textit{Frame-Start} Signal. Und vor jeder Zeile überträgt er ein \textit{Line-Start} Signal. Vor der ersten Zeile muss kein zusätzliches Line-Start Signal gesendet werden. Pro Takt wird ein Pixel übertragen. Der FPGA überträgt eine Zeile erst wenn er sie vollständig vom Sensor ausgelesen hat. Somit bleibt zwischen den zu übertragenden Zeilen noch Zeit um etwaige Read-Befehle auszuführen.
 
@@ -128,7 +122,7 @@ Der Enclustra Mercury XU5 Soc ist ein SoC Modul, auf welchem ein Xilinx Zynq Ult
     \label{fig:bd_soc}
 \end{figure}
 
-Der Ultrascale ist ein SoC mit einem ARM system und einem FPGA integriert in einem Chip. Das Blockschaltbild ist in Abbildung \ref{fig:bd_soc} zu sehen. Auch hier sind nur die für das Projekt relevante Blöcke abgebildet. 
+Der Ultrascale ist ein SoC mit einem ARM system und einem FPGA integriert in einem Chip. Das ARM-System wird auch Programmable System (PS) genannt und der FPGA auch Programmable Logic (PL). Das Blockschaltbild ist in Abbildung \ref{fig:bd_soc} zu sehen. Auch hier sind nur die für das Projekt relevante Blöcke abgebildet. 
 
 Das ARM-System besteht aus zwei ARM Cortex-R5 Kernen, vier Cortex-A53 Kernen und einem Grafikkern. Der Grafikkern ist irrelevant für das Projekt und wird daher komplet verschwiegen. Zusätzlich enthält das ARM-System noch eine Configuration Security Unit (CSU) und eine Platform Management Unit (PMU). Diese beiden Blöcke sind für das Booten und während dem Betrieb für die Sicherheit und das Power Management zuständig.
 
@@ -140,7 +134,7 @@ Es gibt vier Hauptdokumentationen über das SoC. Das Overview, das Technical Ref
 
 
 \subsection{Entwicklungssystem}
-Da das XU5 nur ein Modul ist, welches nicht selbstständig läuft, braucht es ein zusätzliches Board. Im verlauf dieses Projektes wird dieses Board entwickelt. Damit jedoch direkt von Anfang an mit dem Entwickeln auf dem SoC begonnen werden kann, haben wir zusätzlich noch das PE1 Board von Enclustra gekauft. 
+Da das XU5 nur ein Modul ist, welches nicht selbstständig läuft, braucht es ein zusätzliches Board. Im Verlauf dieses Projektes wird dieses Board entwickelt. Damit jedoch direkt von Anfang an mit dem Entwickeln auf dem SoC begonnen werden kann, haben wir zusätzlich noch das PE1 Board von Enclustra gekauft. 
 
 \subsubsection*{Mercury+ PE1-200 Baseboard}
 \begin{figure}[tb]
@@ -149,7 +143,8 @@ Da das XU5 nur ein Modul ist, welches nicht selbstständig läuft, braucht es ei
     \label{fig:bd_pe1}
 \end{figure}
 Das PE1 Board ist ein Baseboard welches alle zusätzliche nötigen funktionen für das XU5 zu verfügungstellt.
-Das Blockdiagramm ist in Abbildung \ref{fig:bd_pe1} zu sehen. Auch hier sind wieder nur die für uns relevanten Blöcke zu sehen.
+Das Blockdiagramm ist in Abbildung \ref{fig:bd_pe1} zu sehen. Auch hier sind wieder nur die für uns relevanten Blöcke zu sehen. 
+Das PE1 hat einen USB Port über welchen das JTAG und UART geführt sind und einen zweiten, welcher auf das USB Interface des SoCs geht. Das JTAG wird auf einen Chip auf dem Board so umgewandelt, dass mit den Entwicklungsumgebungen direkt ohne zusätzliche Hardware per USB auf die Debug-Schnittstelle zugegriffen werden kann. Um zu booten wird die SD Karte gebraucht, für welche das PE1 Board eine Halterung besitzt. Zusätzlich hat das Board noch LEDs und Schalter. Die LEDs und Schalter können als IO des SoCs gebraucht werden. Mit den Schaltern können aber auch Einstellung für den Bootmodus und das Routing der USB Pfade gesetzt werden. Um über USB zu booten müssen die Schalter A1 B2 abgeschaltet sein. Um das JTAG und UART auf die micro USB Büchse zu führen muss Schalter B2 abgeschaltet sein und um das USB Interface des SoCs auf die USB B Büchse zu führen, muss Schalter B1 abgeschalten sein. 
 \todo{ref auf Doku}
 
 
@@ -167,9 +162,7 @@ Das Blockdiagramm ist in Abbildung \ref{fig:bd_pe1} zu sehen. Auch hier sind wie
     - IO
 - Referenz auf Schema und Liste mit Pin und FPGA belegung.
 
-\section{Hardware}
-Dieses Kapitel beschreibt die Hardware des Projektes. Es gibt einen kurzen Überblick und verweist auf die Dokumentation von Fabio und die anderen Dokumente für genauere Angaben. Es definiert die Angaben, welche für das Programmieren des SoCs wichtig sind. Und beschreibt die Inbetriebnahme des SoC Teils der Hardware.
--- evt. weglassen, da teil in Kapitel System schon genug erläutert.
+In Abbildung \ref{fig:bd_top} ist das Blockschaltbild des endgültigen Systems zu sehen. Das selber entwickelte Board hat einen Stecker für das XU5-Modul. Das Modul kann über den SerDes mit dem XI-Computer kommunizieren. Mit dem Mux kann zwischen dem internen und dem externen SerDes gewechselt werden. Und das SFP Modul wandelt das elektrische Signal in ein optisches um. Die Daten können über den Micro-USB Stecker auf den SoC geladen werden. Um zu booten hat es ein SD-Kartenhalter. Zusätzlich hat es noch LEDs und Taster, um falls nötig einfache Ein- und Ausgaben zu betätigen. Um zu debuggen hat es noch einen Stecker für die JTAG-Schnittstelle. Um diese am Computer anzuschliessen braucht es jedoch noch externe Hardware, welche das JTAG auf UART konvertiert. Die JTAG schnittstelle ist nicht auf dem Blockdiagramm, da es nur zu debug-Zwecken dient und während des Betriebs nicht gebraucht wird.
 
 \section{Software}
 Dieses Kapitel ist der Hauptteil der Arbeit. Es beschreibt den FPGA und Mikrocontroller Code, welcher auf dem SoC läuft und wie dieser getestet wurde. Es ist in die Unterkapitel ARM, FPGA und PC Software aufgeteilt.
@@ -185,7 +178,13 @@ Dieses Kapitel beschreibt die Software, welche auf dem PC läuft, welche den Ima
 Dieses Kapitel beschreibt, wie zusätzliche Konfigurationen hinzugefügt werden können.
 
 \section{Entwicklungsumgebung}
-Dieses Kapitel beschreibt, wie der Code für den SoC entwickelt werden kann und worden ist. Dies beinhaltet Vitis, Vivado und wie das Programm auf den SoC geladen werden kann.
+Es gibt zwei Entwicklungsumgebungen (IDE) von Xilinx, um den Zynq Ultrascale+ SoC zu programmieren und konfigurieren. Das eine Ist Vivado. Vivado ist die IDE um Code für den FPGA zu entwickeln. Mit Vivado kann man IPs im Projekt einfügen, FPGA Code simulieren, syntetisieren, implementieren, den FPGA Konfigurieren und direkt auf dem FPGA debuggen.
+
+Die zweite IDE ist Vitis. Mit Vitis kann man Code für die ARM Kerne schreibe, Bootdateien erstellen, den ARM programmieren, den FPGA konfigurieren und den ARM debuggen. Vitis basiert auf der Eclipse IDE
+
+In diesem Projekt wurden die Versionen Vivado 2019.2 und Vitis 2019 verwendet. Es ist die erste Version von Vitis. Vorher wurde die Xilinx SDK verwendet um Code für den ARM zu schreiben. Ab Vivado 2019.2 ist es jedoch nicht mehr möglich Projekte für die SDK zu exportieren, da die SDK und Vitis unterschiedliche Files brauchen um die Hardware, welche mit Vivado generiert wird, zu importieren. Für beide Tools können mit TCL Skripte geschrieben werden.
+
+Mit den beiden Entwicklungsumgebungen kommt noch das Programm DocNav. Diesem Programm beinhaltet alle Dokumentationen von Xilinx.
 \subsection{Vivado}
 -Einleitung
     - Für was ist das Tool
@@ -198,6 +197,13 @@ Dieses Kapitel beschreibt, wie der Code für den SoC entwickelt werden kann und 
 - implementieren
 - Hardwaremanager
 
+Vivado ist die IDE für die Entwicklung von FPGAs, sie versteht VHDL und Verilog. Vivado kann entweder im Projektmodus oder nicht im Projektmodus verwendet werden. In diesem Projekt verwenden wir Vivado nur im Projektmodus. Alle Befehle können enteder im GUI oder in der TCL Konsole gegeben werden. Somit ist alles vollständig skriptbar. 
+
+Vivado besteht aus verschiedenen Teilprogrammen. Diese Sind der IP-Integrator, der Simulator, der Syntetisierer, der Implementierer und der Hardwaremanager.
+
+Die Dokumentation von Vivado ist auf verschiedene Dokumente aufgeteilt. Zum starten ist das "Vivado Design Suite User Guide: Using the Vivado IDE" diese Dokumentation referenziert in Kapitel zwei auf die weiteren Dokumentationen der einzelnen Unterprogramme von Vivado.
+
+
 \subsection{Vitis}
 -Einleitung
     - Für was ist das Tool
@@ -208,6 +214,17 @@ Dieses Kapitel beschreibt, wie der Code für den SoC entwickelt werden kann und 
 - System Projekt
 - Simples Projekt
 - Bootgen
+
+Vitis ist die IDE von Xilinx, um die Processoren zu programmieren. Vitis bassiert auf der Eclipse IDE. 
+Von Vivado kann man die Hardware exportieren und in Vitis importieren. Mit der importierten Hardware wird ein Platform-Projekt generiert. auf Grund von diesen Platform-Projekten kann man dann Projekte erstellen. Hier gibt es auch zwei verschiedene Arten. Die System-Projekte und die normalen. Pro System-Projekt können mehrere normale Projekte sein. Jedoch pro Processor nur ein. Jedes System-Projekt ist an ein Platform-Projekt gebunden und jedes normale Projekt in einem System-Projekt und für einen bestimmten Processor.
+
+Kompiliert wird der Code mit den GCC Compilern. Diese werden mit Vitis mitinstalliert und können von Vitis aus gestartet werden. Der kompilierte Code befindet sich in elf Dateien
+
+Mit Hilfe vom Bootgen Tool kann aus den elf-Dateien und Bitfiles generiert werden. Mit diesen kann man den SoC booten.
+
+Die Dokumentation von Vitis ist unter \todo{ref auf doku} zu finden.
+
+
 
 \subsection{Debugging}
 - Debugging auf dem Chip
@@ -225,22 +242,6 @@ Dieses Kapitel beschreibt, wie der Code für den SoC entwickelt werden kann und 
 - Do nots (Probleme mit Vitis beschreiben)
 - Skripte
 
-
-\section{Theorie}
-Dieses Kapitel beschreibt Funktionalitäten, welche nicht von mir entwickelt worden sind, sondern schon auf dem Modul vorhanden sind. In den einzelnen Unterkapiteln listet es die wichtigsten Konzepte und referenziert auf die Dokumentationen um genauere Informationen zu erhalten. Diese Unterkapitel sollen dazu dienen, dass in den anderen Kapiteln auf diese referenziert werden kann.
-\subsection{Enclustra Mercury PE5 Modul}
-\subsection{Xilinx SoC}
-\subsection{Bootvorgang}
-\subsection{Standart Konfiguration der CPU}
-\subsection{AXI}
-
-Eventuell werden noch folgende weitere Spezifikationen und Komponenten be\-schrieben.
-\subsection{ARM R5}
-\subsection{USB Standart}
-\subsection{USB Treiber}
-\subsection{SerDes}
-\subsection{MGT}
-\subsection{Debugging}
 
 \section{Erläuterungen}
 Dieses Kapitel listet alle Abkürzungen mit den Bedeutungen und einer kurzen Erklärung auf. Zudem erklärt es, wie die verschiedenen Fachwörter zu verstehen sind.
