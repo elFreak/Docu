@@ -32,7 +32,7 @@ Das dritte Kapitel beschreibt den geschrieben Code. Dieser besteht aus drei Teil
 
 Das vierte Kapitel beschreibt wie der Imager-Emulator konfiguriert wird und wie zusätzliche Konfigurationen nachträglich hinzugefügt werden können.
 
-Und zu guter Letzt, das sechste Kapitel beschreibt die Entwicklungsumgebungen (IDEs), mit welchen der Code entwickelt wurde. Dieses Kapitel beschreibt zuerst wie diese aufgebaut sind, was sie können und wie sie zusammenhängen. Als nächstes wird beschrieben, wie man mit den IDEs die Hardware debuggen kann und als letztes die Grenzen der Entwicklungsumgebungen.
+Und zu guter Letzt, das fünfte Kapitel beschreibt die Entwicklungsumgebungen (IDEs), mit welchen der Code entwickelt wurde. Dieses Kapitel beschreibt zuerst wie diese aufgebaut sind, was sie können und wie sie zusammenhängen. Als nächstes wird beschrieben, wie man mit den IDEs die Hardware debuggen kann und als letztes die Grenzen der Entwicklungsumgebungen.
 
 \section{System}
 Das Projekt kann in drei Systeme unterteilt werden. Das vorhandene System von Varian ist das erste. Das zweite System ist eine Zwischenlösung um mit der Entwicklung der Firmware anzufangen, ohne das die eigene Hardware schon vorhanden ist. Und das dritte System ist das endgültige System, welches das System von Varian emuliert.
@@ -191,24 +191,63 @@ Das PE1-Board hat zwei USB Ports. Über den einen ist das JTAG und das UART gef�
     \label{fig:bd_top}
 \end{figure}
 
+Das endgültigen System emuliert den Sensor der Varian vollständig. Zuerst durchläuft der Emulator die Bootsequenz des XI-Computers, damit der XI-Computer das Gefühl an einem richtigen Sensor angeschlossen zu sein. Über USB kann man dann den Imager Emulator konfigurieren und die gewünschten Bilder auf den Emulator laden. Der Emulator rechnet anschliessend die Pixelfehler in die Bilder. Auf Befehl vom XI-Computer sendet der Emulator die Bilddaten, oder arbeitet einen Read- oder Write-Befehl ab. Die Pixelfehler werden nach einem vorgegebenen Muster generiert. Die Muster sollen die Zufallsverteilungen der Pixelfehler nachstellen. Da der FPGA die Pixelfehler in die Bilder einbaut, kann das gleiche Bild mit verschiedenen Pixelfehlern verwendet werden, ohne dass zusätzlich Speicherplatz benötigt wird.
+
 In Abbildung \ref{fig:bd_top} ist das Blockschaltbild des endgültigen Systems zu sehen. Das selber entwickelte Board hat einen Stecker für das XU5-Modul. Das Modul kann über den SerDes mit dem XI-Computer kommunizieren. Mit dem Mux kann zwischen dem internen und dem externen SerDes gewechselt werden. Und das SFP Modul wandelt das elektrische Signal in ein optisches um. Die Daten können über den Mikro-USB-Stecker auf den SoC geladen werden. Um zu booten hat es ein SD-Kartenhalter. Zusätzlich hat es noch LEDs und Taster, um falls nötig einfache Ein- und Ausgaben zu betätigen. Um zu debuggen hat es einen Stecker für die JTAG-Schnittstelle. Um diese am Computer anzuschliessen braucht es noch eine externe Hardware, welche das JTAG auf USB konvertiert. Die JTAG-Schnittstelle ist nicht auf dem Blockdiagramm, da es nur zu Debug-Zwecken dient und während des Betriebs nicht verwendet wird. 
 
 Dieses Board ist die Arbeit des Projekt 5, welches gleichzeitig mit diesem Projekt durchgeführt. Für eine genauere Erklärung der Hardware und Designentscheidungen wird auf den Bericht jenes Projektes verwiesen. \todo{ref Doku Fabio}
 
-\section{Software}
+
+\section{Firmware und FPGA-Code}
 Dieses Kapitel ist der Hauptteil der Arbeit. Es beschreibt den FPGA und Mikrocontroller Code, welcher auf dem SoC läuft und wie dieser getestet wurde. Es ist in die Unterkapitel ARM, FPGA und PC Software aufgeteilt.
 - FPGA Code von Varian mit Blockschaltbild erklären und sagen, welche Module übernommen werden können. Sagen, das der Bootsequenz zuerst noch emuliert wird.
 Blockdiagramm von unserem System zeigen. und in den Unterkapiteln genauer auf die Module eingehen. FPGA code von Varian zuerst nur oberflächlich beschreiben und erst im Unterkapitel FPGA genauer auf die Relevanten Blöcke eingehen.
-\subsection{ARM}
-Dieses Kapitel beschreibt, welche Komponenten des ARM Cores gebraucht werden und wie sie konfiguriert sind, wie die Module des ARM Cores aufgebaut sind und auf welchem Core sie laufen.
-\subsection{FPGA}
-Dieses Kapitel beschreibt die Module, welche auf dem FPGA laufen.
-\subsection{PC Applikation}
-Dieses Kapitel beschreibt die Software, welche auf dem PC läuft, welche den Imager konfiguriert.
 
+Der Zynq Ultrascale+ SoC hat ein ARM-Prozessorsystem und ein FPGA-System auf einem Chip. Gebootet wird immer zuerst das ARM-System, welches dann den FPGA konfiguriert. Der Code für das Prozessorsystem nennen wir Firmware und liegt nach dem Bootvorgang auf dem RAM, von wo die Prozessoren auf die Daten und Instruktionen zugreifen. Der FPGA wird mit dem Bitfile geladen, welches den implementierten Code für den FPGA enthält. 
+
+Abbildung \ref{fig:bd_firmware} enthält das Blockdiagramm vom Aufbau der Firmware und des FPGA-Codes. Vom Prozessorsystem wird nur der ARM Cortex-R5 verwendet. Es gibt zwei Gründe dafür. 
+
+Zum einen ist der Cortex-R weniger komplex als der Cortex-A Kern. Der grösste Unterschied zwischen dem R- und dem A-Kern ist die Memory Management Unit (MMU). Der ARM Cortex-A besitzt eine MMU, welcher den Speicher virtualisiert und den den Zugriff auf jenen Überwacht. Der ARM Cortex-R Kern besitzt nur eine Memory Protection Unit (PMU). Diese virtualisiert den adressraum nicht, sondern arbeiten mit den physikalischen Adressen. Die PMU überwacht jedoch auch den Zugriff auf den Speicher. Da die Virtualisierung des Adressraums nicht benötigt wird, kann diese Komplexität somit gespart werden. 
+
+Zum Anderen liegt der Cortex-R in der Low Power Domain und der Cortex-A in der High Power Domain. Diese beiden Domänen können separat gespeist werden. Somit ist es möglich, die A-Kerne auszuschalten und die Stromversorgung jener abzuschalten. Somit reduziert sich der Energieverbrauch des SoCs und somit auch die produzierte Wärme, welche über das Gehäuse dis­si­pie­rt wird.
+
+Der Computer kann über USB die Bilder und die Konfiguration auf das RAM laden. Der USB Treiber schreibt diese direkt auf das RAM und benachrichtigt die Main-Schleife, dass neue Konfigurationen vorhanden sind. Auf die Bilder kann der FPGA über eine AXI-Schnittstelle zugreifen mittels dem \textit{AXI-Lite Master} Modul. Die Konfigurationen werden vom ARM direkt auf Register im FPGA geschrieben. Dies passiert auch über eine AXI-Schnittstelle. Die Konfiguration werden sofort in die FPGA-Register geschrieben, damit der FPGA auf alle Konfigurationen parallel zugreifen kann und diese nicht andauernd abfragen muss. Dies übernimmt das \textit{AXI-Lite Slave} Modul.
+
+FPGA-Blöcke \textit{Tx Packet Framing}, \textit{Command Processor} und \textit{Access Control} sind Blöcke, welche wir von dem System der Varian übernehmen können. Jedoch emulieren diese Blöcke die Startup-Sequenz des Sensors nicht. Somit müssen sie noch für unser System angepasst werden. Das \textit{Command Processor} Modul empfängt die Befehle des XI-Computers und gibt die Write- und Trigger-Befehle and das \textit{Access Control} Modul weiter. Die Read-Befehle gibt es direkt an das \textit{Tx Packet Framing} Modul weiter. Das \textit{Access Control} Modul speichert die Write-Befehle gibt Zugriff auf die gespeicherten Konfigurationen und initiiert die Trigger-Befehle. Und das \textit{Tx Packet Framing} Modul sendet die Daten an den XI-Computer.
+
+Die Datenaufbereitung bearbeitet die Bilder mit Pixelfehlern, wie durch dei Konfigurationen eingestellt und koordiniert das Senden der Bilder. Dieser Block ist noch nicht Teil von diesem Projekt und wird im nächsten Semester im der weiterführenden Bachelorthesis implementiert.
+
+\begin{figure}[tb]
+    \missingfigure{Blockdiagramm der Firmware und FPGA-Codes}
+    \caption{Blockdiagramm der Firmware und FPGA-Codes}
+    \label{fig:bd_firmware}
+\end{figure}
+
+\todo{bd\_firmware\_pe1 erklären wieso und wie es aufgebaut ist}
+
+\begin{figure}[tb]
+    \missingfigure{Blockdiagramm der Firmware und FPGA-Codes auf dem Entwicklungssystem}
+    \caption{Blockdiagramm der Firmware und FPGA-Codes auf dem Entwicklungssystem}
+    \label{fig:bd_firmware_pe1}
+\end{figure}
+
+
+\subsection{ARM Firmware}
+
+\subsection{AXI FPGA-Module}
+\subsubsection*{AXI-Lite Master}
+\subsubsection*{AXI-Lite Slave}
+
+
+\subsection{Varian FPGA-Module}
+
+\subsection{Bootvorgang}
 
 \section{Konfiguration}
 Dieses Kapitel beschreibt, wie zusätzliche Konfigurationen hinzugefügt werden können.
+
+\section{PC Applikation}
+Dieses Kapitel beschreibt die Software, welche auf dem PC läuft, welche den Imager konfiguriert.
 
 \section{Entwicklungsumgebung}
 Es gibt zwei Entwicklungsumgebungen (IDE) von Xilinx, um den Zynq Ultrascale+ SoC zu programmieren und zu konfigurieren. Die eine ist Vivado. Vivado ist die IDE um Code für den FPGA zu entwickeln. Mit Vivado kann man IPs im Projekt einfügen, FPGA Code simulieren, syntetisieren, implementieren, den FPGA Konfigurieren und direkt auf dem FPGA debuggen.
