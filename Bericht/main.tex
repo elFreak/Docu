@@ -17,7 +17,7 @@ Das P5 und die erste Thesis laufen parallel, die zweite Thesis wird ein Semester
 Das Projekt Imager-Emulator wurde von der Firma Varian Medical Systems ausgeschrieben. Das Ziel is es, einen Röntgensensor zu emulieren. Der Sensor wird auch Imager genannt, wenn auch die ganze zugehörige Elektronik gemeint ist. Daher kommt der Name Imager-Emulator. Der Sensor gibt Bilder über eine nicht standardisierte Schnittstelle an einen Computer weiter. Der Computer, welcher die Bilder des Sensors entgegen nimmt, rechnet diverse Algorithmen, die unteranderem Pixelfehler erkennen und korrigieren. Jedoch kann dem Sensor nicht gesagt werden, \textit{mach mal 'nen Pixelfehler}. Daher braucht es ein Hardware-Emulator, um Bilder mit Pixelfehlern zu generieren und an den Computer zu senden. Mit Hilfe von diesem Emulator können die Algorithmen des Computers in einem realitätsnahen System getestet werden. Der Emulator soll über USB Konfiguriert werden. Somit ergibt sich das Blockdiagramm in Abbildung \ref{fig:bd_sehr_grob}. Ein Computer konfiguriert den Emulator über USB, dieser gibt sich als Imager aus und überträgt die gewünschten Bilder mit den Pixelfehlern auf den XI-Computer. Der XI-Computer ist der Computer, auf dem die Algorithmen laufen. Um die Algorithmen zu testen, bekommt der Computer via Ethernet die berechneten Bilder wiederum  und kann diese mit den erwarteten Bilder verglichen.
 
 \begin{figure}[tb]
-    \missingfigure{Sehr grobes Blockdiagramm}
+    \includegraphics[width=\linewidth]{drawio/bd_sehr_grob}
     \caption{Überblick über das Projekt}
     \label{fig:bd_sehr_grob}
 \end{figure}
@@ -34,12 +34,13 @@ Das vierte Kapitel beschreibt wie der Imager-Emulator konfiguriert wird und wie 
 
 Und zu guter Letzt, das fünfte Kapitel beschreibt die Entwicklungsumgebungen (IDEs), mit welchen der Code entwickelt wurde. Dieses Kapitel beschreibt zuerst wie diese aufgebaut sind, was sie können und wie sie zusammenhängen. Als nächstes wird beschrieben, wie man mit den IDEs die Hardware debuggen kann und als letztes die Grenzen der Entwicklungsumgebungen.
 
+\clearpage
 \section{System}
 Das Projekt kann in drei Systeme unterteilt werden. Das vorhandene System von Varian ist das erste. Das zweite System ist eine Zwischenlösung um mit der Entwicklung der Firmware anzufangen, ohne das die eigene Hardware schon vorhanden ist. Und das dritte System ist das endgültige System, welches das System von Varian emuliert.
 
 \subsection{System Varian}
 \begin{figure}[tb]
-    \missingfigure{Blockdiagramm System Varian}
+    \includegraphics[width=\linewidth]{drawio/bd_varian}
     \caption{Blockdiagramm des Systems von Varian}
     \label{fig:bd_varian}
 \end{figure}
@@ -140,7 +141,7 @@ Mit diesen Anforderungen haben wir fünf verschiedene Varianten von den Firmen E
     
 \subsubsection*{Enclustra Mercury XU5}
 \begin{figure}[tb]
-    \missingfigure{Blockdiagramm des XU5}
+    \includegraphics[width=\linewidth]{drawio/bd_xu5}
     \caption{Blockdiagramm SoC Moduls XU5 von Enclustra}
     \label{fig:bd_xu5}
 \end{figure}
@@ -155,7 +156,7 @@ Für genauere Informationen kann die Dokumentation des Moduls angeschaut werden.
 
 \subsubsection*{Xilinx Zynq Ultrascale+}
 \begin{figure}[tb]
-    \missingfigure{Blockdiagramm des SoCs}
+    \includegraphics[width=\linewidth]{drawio/bd_soc}
     \caption{Blockdiagramm des Zynq Ultrascale+ SoCs von Xilinx}
     \label{fig:bd_soc}
 \end{figure}
@@ -174,7 +175,7 @@ Da das XU5 nur ein Modul ist, welches nicht selbstständig läuft, braucht es ei
 
 \subsubsection*{Mercury+ PE1-200 Baseboard}
 \begin{figure}[tb]
-    \missingfigure{Blockdiagramm des Baseboards}
+    \includegraphics[width=\linewidth]{drawio/bd_pe1}
     \caption{Blockdiagramm des Mercury+ PE1-200 Baseboards von Enclustra}
     \label{fig:bd_pe1}
 \end{figure}
@@ -186,7 +187,7 @@ Das PE1-Board hat zwei USB Ports. Über den einen ist das JTAG und das UART gef�
 
 \subsection{Endsystem}
 \begin{figure}[tb]
-    \missingfigure{Blockdiagramm Endsystems}
+    \includegraphics[width=\linewidth]{drawio/bd_top}
     \caption{Blockdiagramm des Imager-Emulators}
     \label{fig:bd_top}
 \end{figure}
@@ -197,7 +198,7 @@ In Abbildung \ref{fig:bd_top} ist das Blockschaltbild des endgültigen Systems z
 
 Dieses Board ist die Arbeit des Projekt 5, welches gleichzeitig mit diesem Projekt durchgeführt. Für eine genauere Erklärung der Hardware und Designentscheidungen wird auf den Bericht jenes Projektes verwiesen. \todo{ref Doku Fabio}
 
-
+\clearpage
 \section{Firmware und FPGA-Code}
 Dieses Kapitel ist der Hauptteil der Arbeit. Es beschreibt den FPGA und Mikrocontroller Code, welcher auf dem SoC läuft und wie dieser getestet wurde. Es ist in die Unterkapitel ARM, FPGA und PC Software aufgeteilt.
 - FPGA Code von Varian mit Blockschaltbild erklären und sagen, welche Module übernommen werden können. Sagen, das der Bootsequenz zuerst noch emuliert wird.
