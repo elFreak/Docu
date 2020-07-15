@@ -79,6 +79,7 @@ Der Vorteil des internen SerDes ist die Geschwindigkeit. Der externe SerDes Date
     \end{table}
 
 \subsubsection*{Bootvorgang}
+\label{sec:varian_boot_sequence}
 Das Bitfile um den FPGA zu konfigurieren wird bei jedem Start vom XI-Computer über den externen SerDes auf den FPGA geladen. Dazu müssen sich zuerst die beiden SerDes, also der auf dem Imager und der auf im XI-Computer, synchronisieren. Damit der XI-Computer weiss, welcher FPGA auf dem Imager vorhanden ist, liegt ein Bitmuster mittels Pull-Up und Pull-Down Widerständen an den Tx-Leitungen des SerDes auf dem Imager. Somit ergibt sich folgende Bootsequenz.
 
 Zuerst aktiviert der XI-Computer den Sync-Eingang seines SerDes. Somit kann sich der Rx-Pfad des SerDes auf dem Imager mit dem Tx-Takt des SerDes auf dem XI-Computer synchronisieren. Der Sync-Eingang des SerDes auf Imagers ist auf einen Rx-Kanal von sich selber angeschlossen. Dieser wird, sobald das Rx-Pfade des SerDes auf dem Imager synchronisiert ist, aktiviert. Nun sind beide Pfade der SerDes synchronisiert.
@@ -86,6 +87,7 @@ Zuerst aktiviert der XI-Computer den Sync-Eingang seines SerDes. Somit kann sich
 Als nächstes liest der XI-Computer das Versionmuster auf dem Imager aus. Aufgrund von diesem konfiguriert er den FPGA auf dem Imager mit dem entsprechenden Bitfile. Nun ist der FPGA konfiguriert und der Imager kann auf die Befehle vom XI-Computer reagieren. 
 
 \subsubsection*{Kommunikation zwischen Imager und XI-Computer}
+\label{sec:varian_com}
 
 Man kann zwischen dem XI-Computer und dem Imager von einer Master-Slave Beziehung reden. Der XI-Computer hat die Möglichkeit dem Imager verschiedene Befehle zu senden, welche der Imager daraufhin ausführt. Die Befehle können in drei Gruppen eingeteilt werden. Es gibt die Write-Befehle, welche dem Imager Einstellungen übermitteln, die der Imager in einem Register speichert. Mit den Read-Befehlen kann der XI-Computer diese Einstellungsregister wieder auslesen. Und als letztes gibt es noch den Trigger-Befehl. Die Write-Befehle beinhalten eine Adresse und einen Wert, die Read-Befehle nur einen Wert. Mit dem Trigger-Befehl kann der XI-Computer ein Bild anfordern. Ein Trigger-Befehl hat Vorrang vor Write- und Read-Befehlen. Die genaue Auflistung aller Einstellungsregister und deren Aufgabe kann in der Dokumentation des Imagers entnommen werden. \todo{auf Imager Dokumentation referenzieren}
 
@@ -200,29 +202,31 @@ Dieses Board ist die Arbeit des Projekt 5, welches gleichzeitig mit diesem Proje
 
 \clearpage
 \section{Firmware und FPGA-Code}
-Dieses Kapitel ist der Hauptteil der Arbeit. Es beschreibt den FPGA und Mikrocontroller Code, welcher auf dem SoC läuft und wie dieser getestet wurde. Es ist in die Unterkapitel ARM, FPGA und PC Software aufgeteilt.
-- FPGA Code von Varian mit Blockschaltbild erklären und sagen, welche Module übernommen werden können. Sagen, das der Bootsequenz zuerst noch emuliert wird.
-Blockdiagramm von unserem System zeigen. und in den Unterkapiteln genauer auf die Module eingehen. FPGA code von Varian zuerst nur oberflächlich beschreiben und erst im Unterkapitel FPGA genauer auf die Relevanten Blöcke eingehen.
+%Dieses Kapitel ist der Hauptteil der Arbeit. Es beschreibt den FPGA und Mikrocontroller Code, welcher auf dem SoC läuft und wie dieser getestet wurde. Es ist in die Unterkapitel ARM, FPGA und PC Software aufgeteilt.
+%- FPGA Code von Varian mit Blockschaltbild erklären und sagen, welche Module übernommen werden können. Sagen, das der Bootsequenz zuerst noch emuliert wird.
+%Blockdiagramm von unserem System zeigen. und in den Unterkapiteln genauer auf die Module eingehen. FPGA code von Varian zuerst nur oberflächlich beschreiben und erst im Unterkapitel FPGA genauer auf die Relevanten Blöcke eingehen.
 
 Der Zynq Ultrascale+ SoC hat ein ARM-Prozessorsystem und ein FPGA-System auf einem Chip. Gebootet wird immer zuerst das ARM-System, welches dann den FPGA konfiguriert. Der Code für das Prozessorsystem nennen wir Firmware und liegt nach dem Bootvorgang auf dem RAM, von wo die Prozessoren auf die Daten und Instruktionen zugreifen. Der FPGA wird mit dem Bitfile geladen, welches den implementierten Code für den FPGA enthält. 
-
-Abbildung \ref{fig:bd_firmware} enthält das Blockdiagramm vom Aufbau der Firmware und des FPGA-Codes. Vom Prozessorsystem wird nur der ARM Cortex-R5 verwendet. Es gibt zwei Gründe dafür. 
-
-Zum einen ist der Cortex-R weniger komplex als der Cortex-A Kern. Der grösste Unterschied zwischen dem R- und dem A-Kern ist die Memory Management Unit (MMU). Der ARM Cortex-A besitzt eine MMU, welcher den Speicher virtualisiert und den den Zugriff auf jenen Überwacht. Der ARM Cortex-R Kern besitzt nur eine Memory Protection Unit (PMU). Diese virtualisiert den adressraum nicht, sondern arbeiten mit den physikalischen Adressen. Die PMU überwacht jedoch auch den Zugriff auf den Speicher. Da die Virtualisierung des Adressraums nicht benötigt wird, kann diese Komplexität somit gespart werden. 
-
-Zum Anderen liegt der Cortex-R in der Low Power Domain und der Cortex-A in der High Power Domain. Diese beiden Domänen können separat gespeist werden. Somit ist es möglich, die A-Kerne auszuschalten und die Stromversorgung jener abzuschalten. Somit reduziert sich der Energieverbrauch des SoCs und somit auch die produzierte Wärme, welche über das Gehäuse dis­si­pie­rt wird.
-
-Der Computer kann über USB die Bilder und die Konfiguration auf das RAM laden. Der USB Treiber schreibt diese direkt auf das RAM und benachrichtigt die Main-Schleife, dass neue Konfigurationen vorhanden sind. Auf die Bilder kann der FPGA über eine AXI-Schnittstelle zugreifen mittels dem \textit{AXI-Lite Master} Modul. Die Konfigurationen werden vom ARM direkt auf Register im FPGA geschrieben. Dies passiert auch über eine AXI-Schnittstelle. Die Konfiguration werden sofort in die FPGA-Register geschrieben, damit der FPGA auf alle Konfigurationen parallel zugreifen kann und diese nicht andauernd abfragen muss. Dies übernimmt das \textit{AXI-Lite Slave} Modul.
-
-FPGA-Blöcke \textit{Tx Packet Framing}, \textit{Command Processor} und \textit{Access Control} sind Blöcke, welche wir von dem System der Varian übernehmen können. Jedoch emulieren diese Blöcke die Startup-Sequenz des Sensors nicht. Somit müssen sie noch für unser System angepasst werden. Das \textit{Command Processor} Modul empfängt die Befehle des XI-Computers und gibt die Write- und Trigger-Befehle and das \textit{Access Control} Modul weiter. Die Read-Befehle gibt es direkt an das \textit{Tx Packet Framing} Modul weiter. Das \textit{Access Control} Modul speichert die Write-Befehle gibt Zugriff auf die gespeicherten Konfigurationen und initiiert die Trigger-Befehle. Und das \textit{Tx Packet Framing} Modul sendet die Daten an den XI-Computer.
-
-Die Datenaufbereitung bearbeitet die Bilder mit Pixelfehlern, wie durch dei Konfigurationen eingestellt und koordiniert das Senden der Bilder. Dieser Block ist noch nicht Teil von diesem Projekt und wird im nächsten Semester im der weiterführenden Bachelorthesis implementiert.
 
 \begin{figure}[tb]
     \missingfigure{Blockdiagramm der Firmware und FPGA-Codes}
     \caption{Blockdiagramm der Firmware und FPGA-Codes}
     \label{fig:bd_firmware}
 \end{figure}
+
+Abbildung \ref{fig:bd_firmware} enthält das Blockdiagramm vom Aufbau der Firmware und des FPGA-Codes. Vom Prozessorsystem wird nur der ARM Cortex-R5 verwendet. Es gibt zwei Gründe dafür. 
+
+Zum Einen ist der Cortex-R weniger komplex als der Cortex-A Kern. Der grösste Unterschied zwischen dem R- und dem A-Kern ist die Memory Management Unit (MMU). Der ARM Cortex-A besitzt eine MMU, welcher den Speicher virtualisiert und den den Zugriff auf jenen Überwacht. Der ARM Cortex-R Kern besitzt nur eine Memory Protection Unit (PMU). Diese virtualisiert den adressraum nicht, sondern arbeiten mit den physikalischen Adressen. Die PMU überwacht jedoch auch den Zugriff auf den Speicher. Da die Virtualisierung des Adressraums nicht benötigt wird, kann diese Komplexität somit gespart werden. 
+
+Zum Anderen liegt der Cortex-R in der Low Power Domain und der Cortex-A in der High Power Domain. Diese beiden Domänen können separat gespeist werden. Somit ist es möglich, die A-Kerne auszuschalten und die Stromversorgung jener abzuschalten. Somit reduziert sich der Energieverbrauch des SoCs und somit auch die produzierte Wärme, welche über das Gehäuse dis­si­pie­rt wird.
+
+Der Computer kann über USB die Bilder und die Konfiguration auf das RAM laden. Der USB Treiber schreibt diese direkt auf das RAM und benachrichtigt die Main-Schleife, dass neue Konfigurationen vorhanden sind. Auf die Bilder kann der FPGA über eine AXI-Schnittstelle zugreifen mittels dem \textit{AXI-Lite Master} Modul. Die Konfigurationen werden vom ARM direkt auf Register im FPGA geschrieben. Dies passiert auch über eine AXI-Schnittstelle. Die Konfiguration werden sofort in die FPGA-Register geschrieben, damit der FPGA auf alle Konfigurationen parallel zugreifen kann und diese nicht andauernd abfragen muss. Dies übernimmt das \textit{AXI-Lite Slave} Modul.
+
+FPGA-Blöcke \textit{Tx Packet Framing} und \textit{Command Processor} sind Blöcke, welche wir von dem System der Varian übernehmen können. Jedoch emulieren diese Blöcke die Startup-Sequenz des Sensors nicht. Somit müssen sie noch für unser System angepasst werden. Das \textit{Command Processor} Modul empfängt die Befehle des XI-Computers und gibt die Write- und Trigger-Befehle weiter. Die Read-Befehle gibt es direkt an das \textit{Tx Packet Framing} Modul weiter. 
+%Das \textit{Access Control} Modul speichert die Write-Befehle und gibt Zugriff auf die gespeicherten Konfigurationen und initiiert die Trigger-Befehle. 
+Das \textit{Tx Packet Framing} Modul sendet die Daten an den XI-Computer.
+
+Die Datenaufbereitung bearbeitet die Bilder mit Pixelfehlern, wie durch dei Konfigurationen eingestellt, koordiniert das Senden der Bilder und Arbeitet die Befehle des XI-Computers ab. Dieser Block ist noch nicht Teil von diesem Projekt und wird im nächsten Semester im der weiterführenden Bachelorthesis implementiert.
 
 \todo{bd\_firmware\_pe1 erklären wieso und wie es aufgebaut ist}
 
@@ -241,8 +245,43 @@ Die Datenaufbereitung bearbeitet die Bilder mit Pixelfehlern, wie durch dei Konf
 
 
 \subsection{Varian FPGA-Module}
+Die beiden Module \textit{TxPacketFraming} und \textit{CommandProcessor} sind von der Firma Varian geschrieben. Für dieses Projekt können wir sie grösstenTeils übernehmen. Abbildung \ref{fig:bd_fpga_varian} zeigt das Blockschaltbild der beiden Module und wie sie zusammengehängt sind.
+
+\begin{figure}[tb]
+    \missingfigure{Blockschaltbild}
+    \caption{Blockdiagramm der beiden Module \textit{TxPacketFraming} und \textit{TxPacketFraming}}
+    \label{fig:bd_fpga_varian}
+\end{figure}
+
+\subsubsection*{TxPacketFraming}
+Das Modul \textit{TxPacketFraming} ist zuständig für die Übertragung der Daten an den XI-Computer über den externen SerDes. Da der externe SerDes DC-freie codierung besitzt, muss dies in FPGA geschehen. Dafür werden die Daten zuerst vom \textit{Encoder} Modul codiert, bevor sie an den SerDes gesendet werden. Das \textit{Encoder} Modul hat vier Eingänge und einen Ausgang.
+Der \textbf{Clk}-Eingang ist der Takt des Moduls.
+Der \textbf{Code}-Eingang zeigt, ob es sich um ein Signal oder um Bilddaten handelt.
+Der \textbf{En}-Eingang aktiviert das Modul.
+Im \textbf{DataIn}-Eingang werden die Daten und Signale eingegeben.
+Der \textbf{DataOut} Ausgang gibt die codierten Daten und Signale aus.
+
+Der Imager sendet entweder Bilddaten oder Antworten von Befehlen des XI-Computers. Vor jedem neuen Bild sendet der Imager ein \textit{Frame Start} Signal, vor jeder neuen Zeile eines Bildes eine \textit{Line Start} Signal und vor jeder Antwort eines Befehls ein \textit{Command} Signal. Wie in Kapitel \ref{sec:varian_com} unter \textit{Kommunikation zwischen Imager und XI-Computer} erläutert.
+
+Der Tx-Pfad des SerDes hat 18 parallele Bits. 16 werden gebraucht, um die Daten und Signale zu übertragen, eines um zu signalisieren, ob es sich um ein Signal oder um Daten handelt und das letzte, um das DC-Balancing zu implementieren.
+
+Die Antworten auf einen Read-Befehl werden vom \textit{CommandProcessor} mit den Eingängen \textbf{TxCmdWrite} und \textbf{TxCmdData} in ein Fifo geschrieben und bei Gelegenheit, zwischen den Bildzeilen, Übertragen.
+Um eine Bildzeile zu übertragen muss der Eingang \textbf{ImgDataReady} gesetzt werden und den \textbf{FrameLineStart}-Eingang entsprechend gesetzt werden. Für ein neues Bild muss \textit{0b10} und für eine neue Zeile \textit{0b01} angelegt werden. Wenn das \textit{TxPacketFraming} Modul bereit ist die Zeile zu übertragen bestätigt es dies mit dem Setzen des Ausgangs \textbf{ImgDataRdEn}. Im nächsten Takt überträgt das Modul das Signal und danach überträgt es pro Takt einen Pixel. Dafür müssen die Pixeldaten am Eingang {ImgData} angelegt werden und mit jedem Takt entsprechend dem nächsten Pixel erneuert werden. Sobald alle Pixel der Zeile übertragen sind muss der \textbf{ImgDataReady}-Eingang gelöscht werden. Am \textbf{Clk}-Eingang muss der Takt angelegt werden und der Ausgang \textbf{TxDataOut} geht auf die Pins, welche mit dem Externen SerDes verbunden sind.
+
+
+Dieses Verhalten ist mittels einer Finite State Machine (FSM) gelöst. Die FSM ist in Abbildung \ref{fig:fsm_tx_packet_framing} zu sehen.
+
+\begin{figure}[tb]
+    \missingfigure{Blockschaltbild des}
+    \caption{State Machine des Moduls \textit{TxPacketFraming}}
+    \label{fig:fsm_tx_packet_framing}
+\end{figure}
+
+\subsubsection*{CommandProcessor}
 
 \subsection{Bootvorgang}
+
+\subsection{Nächste Schritte}
 
 \section{Konfiguration}
 Dieses Kapitel beschreibt, wie zusätzliche Konfigurationen hinzugefügt werden können.
@@ -300,7 +339,6 @@ Die Dokumentation von Vitis ist unter \todo{ref auf doku} zu finden.
 \subsection{Schnittstelle zwischen Vivado und Vitis}
 
 
-
 \subsection{Debugging}
 - Debugging auf dem Chip
 - Die debugging Tools
@@ -316,6 +354,10 @@ Die Dokumentation von Vitis ist unter \todo{ref auf doku} zu finden.
 - Files von Vitis
 - Do nots (Probleme mit Vitis beschreiben)
 - Skripte
+
+
+\section{Reflexion}
+
 
 
 \section{Erläuterungen}
