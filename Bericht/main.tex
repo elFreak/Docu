@@ -222,11 +222,13 @@ Zum Anderen liegt der Cortex-R in der Low Power Domain und der Cortex-A in der H
 
 Der Computer kann über USB die Bilder und die Konfiguration auf das RAM laden. Der USB Treiber schreibt diese direkt auf das RAM und benachrichtigt die Main-Schleife, dass neue Konfigurationen vorhanden sind. Auf die Bilder kann der FPGA über eine AXI-Schnittstelle zugreifen mittels dem \textit{AXI-Lite Master} Modul. Die Konfigurationen werden vom ARM direkt auf Register im FPGA geschrieben. Dies passiert auch über eine AXI-Schnittstelle. Die Konfiguration werden sofort in die FPGA-Register geschrieben, damit der FPGA auf alle Konfigurationen parallel zugreifen kann und diese nicht andauernd abfragen muss. Dies übernimmt das \textit{AXI-Lite Slave} Modul.
 
-FPGA-Blöcke \textit{Tx Packet Framing} und \textit{Command Processor} sind Blöcke, welche wir von dem System der Varian übernehmen können. Jedoch emulieren diese Blöcke die Startup-Sequenz des Sensors nicht. Somit müssen sie noch für unser System angepasst werden. Das \textit{Command Processor} Modul empfängt die Befehle des XI-Computers und gibt die Write- und Trigger-Befehle weiter. Die Read-Befehle gibt es direkt an das \textit{Tx Packet Framing} Modul weiter. 
+FPGA-Blöcke \textit{TxPacketFraming} und \textit{CommandProcessor} sind Blöcke, welche wir von dem System der Varian übernehmen können. Jedoch emulieren diese Blöcke die Startup-Sequenz des Sensors nicht. Somit müssen sie noch für unser System angepasst werden. Das \textit{CommandProcessor} Modul empfängt die Befehle des XI-Computers und gibt die Write- und Trigger-Befehle weiter. Die Read-Befehle gibt es direkt an das \textit{TxPacketFraming} Modul weiter. 
 %Das \textit{Access Control} Modul speichert die Write-Befehle und gibt Zugriff auf die gespeicherten Konfigurationen und initiiert die Trigger-Befehle. 
 Das \textit{Tx Packet Framing} Modul sendet die Daten an den XI-Computer.
 
 Die Datenaufbereitung bearbeitet die Bilder mit Pixelfehlern, wie durch dei Konfigurationen eingestellt, koordiniert das Senden der Bilder und Arbeitet die Befehle des XI-Computers ab. Dieser Block ist noch nicht Teil von diesem Projekt und wird im nächsten Semester im der weiterführenden Bachelorthesis implementiert.
+
+So soll es auf dem endgültigen System aufgebaut sein. Auf dem PE1-Board also dem zwischen System ist es wie in Abbildung \ref{fig:bd_firmware_pe1}. Da der externe SerDes und das SFP-Modul noch nicht vorhanden sind, sind die Blöcke der Varian nicht implementiert. Das Zwischensystem zeigt, dass der PC über USB Daten auf das RAM schreiben kann, dass der ARM-Kern diese Daten über AXI in Register im FPGA schreiben kann, und dass der FPGA über AXI auf das RAM zugegriffen kann. Um dies zu zeigen, das Register, auf welches der ARM-Kern schreibt, mit einem LED verbunden und das \textit{AXI-Lite Master} Modul mit zwei LEDs, welche anzeigen, ob der Schreib- und Lesezyklus fertig ist und ob er erfolgreich war. Zudem gibt der ARM-Kern über UART den Wert des RAM-Registers und des FPGA-Registers aus. Über einen DIP-Switch kann man den Wert einstellen, welcher das FPGA in das RAM schreiben soll. 
 
 \todo{bd\_firmware\_pe1 erklären wieso und wie es aufgebaut ist}
 
@@ -245,7 +247,7 @@ Die Datenaufbereitung bearbeitet die Bilder mit Pixelfehlern, wie durch dei Konf
 
 
 \subsection{Varian FPGA-Module}
-Die beiden Module \textit{TxPacketFraming} und \textit{CommandProcessor} sind von der Firma Varian geschrieben. Für dieses Projekt können wir sie grösstenTeils übernehmen. Abbildung \ref{fig:bd_fpga_varian} zeigt das Blockschaltbild der beiden Module und wie sie zusammengehängt sind.
+Die beiden Module \textit{TxPacketFraming} und \textit{CommandProcessor} sind von der Firma Varian geschrieben. Für dieses Projekt können wir sie grössten Teils übernehmen. Abbildung \ref{fig:bd_fpga_varian} zeigt das Blockschaltbild der beiden Module und wie sie zusammengehängt sind.
 
 \begin{figure}[tb]
     \missingfigure{Blockschaltbild}
