@@ -236,12 +236,22 @@ So soll es auf dem endgültigen System aufgebaut sein. Auf dem PE1-Board also de
     \label{fig:bd_firmware_pe1}
 \end{figure}
 
+\subsection{Bootvorgang}
+
+
 
 \subsection{ARM Firmware}
+Die Firmware für den ARM Cortex R5 besteht aus vier Teilen. Dem USB-Treiber, dem Daten Kopierer, dem IO-Treiber und der Main Funktion. Den USB-Treiber haben wir von Xilinx übernommen und ein wenig angepasst. Der Daten Kopierer hat eine Struktur, welche die Konfigurationen auf die Register in FPGA schreibt, sobald der USB-Treiber meldet, dass die Konfigurationen geändert wurden. Über den IO-Treiber kann man die LEDs, Taster und Schalter ein- und auslesen, ohne sich Gedanken über die physikalische Anordnung der IOs zu machen. Die Main Funktion verbindet die Blöcke und gibt für Testzwecke Informationen über UART oder die LEDs weiter.
+
+\subsubsection*{USB-Treiber}
+Der USB-Treiber ist das grösste Modul der ARM-Firmware. Daher wird diese ein wenig genauer beschrieben. Leider hat sich Xilinx nicht viel Aufwand für das Konzept, die Lesbarkeit und die Dokumentation des USB-Treiber gemacht. Daher wird nicht alles genau beschrieben, da ich alles komplet verstehe.
+
+Der USB-Treiber verwendet zum einen den USB-Treiber, welcher im Board Support Package (BSP) im Platform Projekt von Vitis vorhanden ist. Und zum anderen das Beispiel Projekt, welches Xilinx mit dem Treiber mitliefert. Der USB-Treiber des BSPs hat Funktionen und Datenstrukuren, um die Grundlegenden Funktionen des USB-Moduls zu steuern. Das Beispielprojekt implementiert den Softwareteil des USB-Standards und der Massstorage USB-Klasse. Das Beispielprojekt unterstützt den reduzierten SCSI Befehlssatz, um die Massstorage Klasse zu implementieren.
+
+Das Beispielprojekt greift auf die Funktionen des USB-Treibers des BSPs über eine Wrapper-Library zu. Diese Bibliothek gibt ändert die API des USB-Treibers des BSPs. Jedoch greift das Beispielprojekt trotzdem noch direkt auf den USB-Treiber des BSPs zu. 
 
 \subsection{AXI FPGA-Module}
-\subsubsection*{AXI-Lite Master}
-\subsubsection*{AXI-Lite Slave}
+Die AXI FPGA-Module sind Vorlagen von Xilinx. Der AXI-Lite Slave nimmt Daten über das AXI Protokoll entgegen, speichert diese In Registern im FPGA und gibt die Daten wieder aus, wenn einen entsprechenden AXI-Befehl ankommt. Der AXI-Lite Master schreibt sequenziell über AXI auf eine Reihe von Registern und liesst diese anschliessend wieder aus und vergleicht sie mit den geschriebenen Werten. Beide Module implementiereren die AXI-Protokolle, indem sie für jeden Ausgang einen VHDL-Prozess definieren, welcher den Wert des Ausgangs anhand von den Eingängen bestimmt. Wenn die Eingänge zu wenig Information geben um die Zustände des Ausgangs komplet zu beschreiben, führen sie noch Zwischensignale ein.
 
 
 \subsection{Varian FPGA-Module}
@@ -267,7 +277,6 @@ Der Tx-Pfad des SerDes hat 18 parallele Bits. 16 werden gebraucht, um die Daten 
 
 Die Antworten auf einen Read-Befehl werden vom \textit{CommandProcessor} mit den Eingängen \textbf{TxCmdWrite} und \textbf{TxCmdData} in ein Fifo geschrieben und bei Gelegenheit, zwischen den Bildzeilen, Übertragen.
 Um eine Bildzeile zu übertragen muss der Eingang \textbf{ImgDataReady} gesetzt werden und den \textbf{FrameLineStart}-Eingang entsprechend gesetzt werden. Für ein neues Bild muss \textit{0b10} und für eine neue Zeile \textit{0b01} angelegt werden. Wenn das \textit{TxPacketFraming} Modul bereit ist die Zeile zu übertragen bestätigt es dies mit dem Setzen des Ausgangs \textbf{ImgDataRdEn}. Im nächsten Takt überträgt das Modul das Signal und danach überträgt es pro Takt einen Pixel. Dafür müssen die Pixeldaten am Eingang {ImgData} angelegt werden und mit jedem Takt entsprechend dem nächsten Pixel erneuert werden. Sobald alle Pixel der Zeile übertragen sind muss der \textbf{ImgDataReady}-Eingang gelöscht werden. Am \textbf{Clk}-Eingang muss der Takt angelegt werden und der Ausgang \textbf{TxDataOut} geht auf die Pins, welche mit dem Externen SerDes verbunden sind.
-
 
 Dieses Verhalten ist mittels einer Finite State Machine (FSM) gelöst. Die FSM ist in Abbildung \ref{fig:fsm_tx_packet_framing} zu sehen.
 
@@ -297,7 +306,9 @@ Wenn der Ausgang \textbf{WrEn} gesetzt ist, handelt es sich um einen Write-Zugri
     \label{fig:fsm_command_processor}
 \end{figure}
 
-\subsection{Bootvorgang}
+\subsection{Vivado Projekt}
+\subsection{Vitis Projekt}
+
 
 \subsection{Nächste Schritte}
 FPGA-Code auf Endsystem portieren\\
@@ -306,7 +317,7 @@ Datenverarbeitungs Block schreiben\\
 PC Software schreiben\\
 MGT implementieren
 
-\section{Konfiguration}
+\section{Imager-Emulator Konfiguration}
 Dieses Kapitel beschreibt, wie zusätzliche Konfigurationen hinzugefügt werden können.
 
 \section{Entwicklungsumgebung}
