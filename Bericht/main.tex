@@ -209,7 +209,7 @@ Dieses Board ist die Arbeit des Projekt 5, welches gleichzeitig mit diesem Proje
 Der Zynq Ultrascale+ SoC hat ein ARM-Prozessorsystem und ein FPGA-System auf einem Chip. Gebootet wird immer zuerst das ARM-System, welches dann den FPGA konfiguriert. Der Code für das Prozessorsystem nennen wir Firmware und liegt nach dem Bootvorgang auf dem RAM, von wo die Prozessoren auf die Daten und Instruktionen zugreifen. Der FPGA wird mit dem Bitfile geladen, welches den implementierten Code für den FPGA enthält. 
 
 \begin{figure}[tb]
-    \missingfigure{Blockdiagramm der Firmware und FPGA-Codes}
+    \includegraphics[width=0.6\linewidth]{drawio/bd_firmware}
     \caption{Blockdiagramm der Firmware und FPGA-Codes}
     \label{fig:bd_firmware}
 \end{figure}
@@ -230,10 +230,8 @@ Die Datenaufbereitung bearbeitet die Bilder mit Pixelfehlern, wie durch dei Konf
 
 So soll es auf dem endgültigen System aufgebaut sein. Auf dem PE1-Board also dem zwischen System ist es wie in Abbildung \ref{fig:bd_firmware_pe1}. Da der externe SerDes und das SFP-Modul noch nicht vorhanden sind, sind die Blöcke der Varian nicht implementiert. Das Zwischensystem zeigt, dass der PC über USB Daten auf das RAM schreiben kann, dass der ARM-Kern diese Daten über AXI in Register im FPGA schreiben kann, und dass der FPGA über AXI auf das RAM zugegriffen kann. Um dies zu zeigen, das Register, auf welches der ARM-Kern schreibt, mit einem LED verbunden und das \textit{AXI-Lite Master} Modul mit zwei LEDs, welche anzeigen, ob der Schreib- und Lesezyklus fertig ist und ob er erfolgreich war. Zudem gibt der ARM-Kern über UART den Wert des RAM-Registers und des FPGA-Registers aus. Über einen DIP-Switch kann man den Wert einstellen, welcher das FPGA in das RAM schreiben soll. 
 
-\todo{bd\_firmware\_pe1 erklären wieso und wie es aufgebaut ist}
-
 \begin{figure}[tb]
-    \missingfigure{Blockdiagramm der Firmware und FPGA-Codes auf dem Entwicklungssystem}
+    \includegraphics[width=\linewidth]{drawio/bd_firmware_pe1}
     \caption{Blockdiagramm der Firmware und FPGA-Codes auf dem Entwicklungssystem}
     \label{fig:bd_firmware_pe1}
 \end{figure}
