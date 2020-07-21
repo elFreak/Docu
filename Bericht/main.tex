@@ -248,9 +248,14 @@ Der USB-Treiber ist das grösste Modul der ARM-Firmware. Daher wird diese ein we
 
 Der USB-Treiber verwendet zum einen den USB-Treiber, welcher im Board Support Package (BSP) im Platform Projekt von Vitis vorhanden ist. Und zum anderen das Beispiel Projekt, welches Xilinx mit dem Treiber mitliefert. Der USB-Treiber des BSPs hat Funktionen und Datenstrukuren, um die Grundlegenden Funktionen des USB-Moduls zu steuern. Das Beispielprojekt implementiert den Softwareteil des USB-Standards und der Massstorage USB-Klasse. Das Beispielprojekt unterstützt den reduzierten SCSI Befehlssatz, um die Massstorage Klasse zu implementieren.
 
-Das Beispielprojekt greift auf die Funktionen des USB-Treibers des BSPs über eine Wrapper-Library zu. Diese Bibliothek gibt ändert die API des USB-Treibers des BSPs. Jedoch greift das Beispielprojekt trotzdem noch direkt auf den USB-Treiber des BSPs zu. \todo{MPU und andere Einstellungen beschreiben}
+Das Beispielprojekt greift auf die Funktionen des USB-Treibers des BSPs über eine Wrapper-Library zu. Diese Bibliothek gibt ändert die API des USB-Treibers des BSPs. Jedoch greift das Beispielprojekt trotzdem noch direkt auf den USB-Treiber des BSPs zu. 
+\subsubsection*{ARM Konfiguration}
+\todo{MPU und andere Einstellungen beschreiben}
+
+\subsection{AXI Protokoll}
 
 \subsection{AXI FPGA-Module}
+\label{sec:axi}
 Die AXI FPGA-Module sind Vorlagen von Xilinx. Der AXI-Lite Slave nimmt Daten über das AXI Protokoll entgegen, speichert diese In Registern im FPGA und gibt die Daten wieder aus, wenn einen entsprechenden AXI-Befehl ankommt. Der AXI-Lite Master schreibt sequenziell über AXI auf eine Reihe von Registern und liesst diese anschliessend wieder aus und vergleicht sie mit den geschriebenen Werten. Beide Module implementiereren die AXI-Protokolle, indem sie für jeden Ausgang einen VHDL-Prozess definieren, welcher den Wert des Ausgangs anhand von den Eingängen bestimmt. Wenn die Eingänge zu wenig Information geben um die Zustände des Ausgangs komplet zu beschreiben, führen sie noch Zwischensignale ein.
 
 
@@ -307,27 +312,12 @@ Wenn der Ausgang \textbf{WrEn} gesetzt ist, handelt es sich um einen Write-Zugri
 \end{figure}
 
 \subsection{Vivado Projekt}
-Skript
-Top
-Blockdiagramm in IP Integrator
-Contraintfile
-Implementiertes Design
+Das Vivado Projekt kann mit dem Skript erstellt werden. Das Skript kreiert ein neues Projekt, erstellt ein Blockdiagramm im IP Integrator, fügt alle Blöcke in das Blockdiagramm, konfiguriert das Prozessorsystem im Blockdiagramm, erstellt die Top-Datei und es erstellt die Constraint-Datei.
 
-Simulation von Varianteil
+Die Top-Datei instantiiert das Blockdiagramm vom IP Integrator und definiert die Namen der Ausgänge, welche an die Pins gehen. Die Constraint-Datei verbindet die Ausgänge der Top-Datei mit den Pins und konfiguriert die Pins entsprechend. 
 
 \subsection{Vitis Projekt}
-Skript
-Platform
-Applikation
-Main
-
-
-\subsection{Nächste Schritte}
-FPGA-Code auf Endsystem portieren\\
-Bootvorgang implementieren\\
-Datenverarbeitungs Block schreiben\\
-PC Software schreiben\\
-MGT implementieren
+Das Vitis Projekt kann auch mit einem Skript erstellt werden. Das Skript erstellt mit der exportierten XSA-Datei ein Plattform Projekt und kompiliert dieses. Wenn nur ein aktualisierter Bootloader gebraucht wird, reicht es, das Skript bis hier auszuführen. Danach erstellt das Skript die Applikation und kopiert die Sourcefiles hinein. Am Schluss kompliert es die Applikation und erstellt ein Bootimage.
 
 \section{Imager-Emulator Konfiguration}
 Die Konfigurationen können über USB auf den Imager-Emulator geladen werden. Die Daten sind im RAM in einer C-Struktur gespeichert. Im Moment hat die Struktur vier Einträge. Der \textbf{Enable}-Eintrag kann den Emulator stoppen. Die Idee ist, dass immer wenn der PC neue Konfigurationen und Bilder auf den Emulator lädt, dieses Bit zuerst gelöscht wird und somit der Emulator stoppt. Dies soll mögliche Fehler verhindern, welche wegen unvollständigen Konfigurationen und Bilder entstehen können. Sobald der Emulator vollständig konfiguriert ist, setzt der PC dieses Bit wieder. Der \textbf{n}-Eintrag gibt an wieviele Bilder auf dem Emulator gespeichert sind. Der \textbf{StartAddr}-Eintrag sagt, wo das erste Bild im RAM anfängt. Und der \textbf{Bildgrösse}-Eintrag sagt mit drei Bits welche Bildgrösse die Bilder haben. Somit kann das FPGA ausrechnen, wann das nächste Bild anfängt. Diese Konfigurationen sind an erster Stelle im ersten Sektor des USB-Massenspeichers. Das USB-Massenspeicher Protokoll definiert, dass immer ein Sektor aufs mal gschrieben wird. Ein Sektor ist 512 Byte gross. Sobald im ersten Sektor etwas geschrieben wird, aktuallisiert das ARM-System die Register auf dem FPGA.
@@ -343,62 +333,51 @@ In diesem Projekt wurden die Versionen Vivado 2019.2 und Vitis 2019 verwendet. E
 
 Mit den beiden Entwicklungsumgebungen kommt noch das Programm DocNav. Diesem Programm beinhaltet alle Dokumentationen von Xilinx.
 \subsection{Vivado}
--Einleitung
-    - Für was ist das Tool
-    - Bennung der einzelnen Schaltflächen(in Bild)
-    - Was kann es alles / aus welchen Teilsystemen besteht es
-    - Doku
-- IP Integrator
-- Simulation
-- Syntetisieren
-- implementieren
-- Hardwaremanager
+Vivado ist die IDE für die Entwicklung von FPGAs, sie versteht VHDL und Verilog. Vivado kann entweder im Projektmodus oder nicht im Projektmodus verwendet werden. In diesem Projekt verwenden wir Vivado nur im Projektmodus. Alle Befehle können enteder im GUI oder in der TCL Konsole eingegeben werden. Somit ist Vivado vollständig skriptbar. Ein Vivadoprojekt besitzt ein Top-Modul, welches alle anderen Module und Blockdiagramme hinzufügt.
 
-Vivado ist die IDE für die Entwicklung von FPGAs, sie versteht VHDL und Verilog. Vivado kann entweder im Projektmodus oder nicht im Projektmodus verwendet werden. In diesem Projekt verwenden wir Vivado nur im Projektmodus. Alle Befehle können enteder im GUI oder in der TCL Konsole eingegeben werden. Somit ist alles vollständig skriptbar. 
+Vivado besteht aus verschiedenen Teilprogrammen. Diese sind der IP-Integrator, der Simulator, der Syntetisierer, der Implementierer und der Hardwaremanager.
 
-Vivado besteht aus verschiedenen Teilprogrammen. Diese Sind der IP-Integrator, der Simulator, der Syntetisierer, der Implementierer und der Hardwaremanager.
+Die Dokumentation von Vivado ist auf verschiedene Dokumente aufgeteilt. Zum Starten ist die "Vivado Design Suite User Guide: Using the Vivado IDE" gut geeignet. Diese Dokumentation referenziert in Kapitel zwei auf die weiteren Dokumentationen der einzelnen Unterprogramme von Vivado.
 
-Die Dokumentation von Vivado ist auf verschiedene Dokumente aufgeteilt. Zum starten ist das "Vivado Design Suite User Guide: Using the Vivado IDE" diese Dokumentation referenziert in Kapitel zwei auf die weiteren Dokumentationen der einzelnen Unterprogramme von Vivado.
+Der IP-Integrator ist das Tool um die Intellectual Properties (IP) zu instanzieren. Dafür erstellt der IP-Integrator ein Blockdiagramm, welches ein VHDL-Modul einbinden kann. Das Blockdiagramm kann auch selber erstellt IPs und VHDL-Module beinhalten, wobei hier die Grenze zwischen IP und VHDL-Modul schwimmend sind. Der Wizard "Create and Package new IP" kann die eigene Module in IPs umwandeln, aber muss nicht um es im Blockdiagramm des IP-Integrators einzufügen. Zudem hat der Wizard Vorlagen für AXI-Schnittstellen. Diese sind in Kapitel \ref{sec:axi} genauer beschrieben. Der Wizard kann man in der Menuleiste unter Tools starten. Das IP \textit{zynq\_ultra\_ps} instanziert das Prozessorsystem des Ultrascales. Somit kann man dieses konfigurieren und die anderen IPs an die Schnitstellen zum PS anhängen. Die Konfigurationen exportiert Vivado mit der XSA-Datei, mit welchem Vitis dann die Plattform generiert. \todo{ref auf Doku}
 
+Der Simulator simuliert die VHDL Module(Mindblowing). Für die Simulation können mehrere Sets definiert werden, welche man von einander getrennt aufrufen kann. Die Testbenches können direct auf die Module im Projekt zugreifen. \todo{ref auf Doku} 
+
+Der Syntetisierer und Implementierer generieren das Bitfile für das Konfigurieren des FPGAs. Dabei ist der Syntetisierer der Hardware unabhängige Teil und der Implementierer der Hardware abhängige. Die XDC-Constraint-Dateien konfigurieren diese beiden Tools. In den Constraint-Dateien müssen auch die Zuweisung der Ein- und Ausgänge des Top-Moduls zu den Pins und deren Einstellungen statfinden. \todo{ref auf Doku Imp, Synt, Const}
+
+Der Hardware Manager kann den Bitstream direkt auf den FPGA laden und debuggen. Dfür braucht es jedoch noch einen oder mehrere Integrated Logic Analyser (ILA) IPs, welche im Blockdiagramm eingefügt werden können. Mit diesen kann man auf ein Trigger die gewünschten Signale für eine gewisse Zeit anschauen. \todo{ref auf Doku HM, ILA}
 
 \subsection{Vitis}
--Einleitung
-    - Für was ist das Tool
-    - Bennung der einzelnen Schaltflächen(in Bild)
-    - Was kann es alles / aus welchen Teilsystemen besteht es
-    - Doku
-- Plattform Projekt
-- System Projekt
-- Simples Projekt
-- Bootgen
 
-Vitis ist die IDE von Xilinx, um die Processoren zu programmieren. Vitis bassiert auf der Eclipse IDE. 
-Von Vivado kann man die Hardware exportieren und in Vitis importieren. Mit der importierten Hardware wird ein Platform-Projekt generiert. auf Grund von diesen Platform-Projekten kann man dann Projekte erstellen. Hier gibt es auch zwei verschiedene Arten. Die System-Projekte und die normalen. Pro System-Projekt können mehrere normale Projekte sein. Jedoch pro Processor nur ein. Jedes System-Projekt ist an ein Platform-Projekt gebunden und jedes normale Projekt in einem System-Projekt und für einen bestimmten Processor.
+\begin{figure}[tb]
+    \missingfigure{Zusammenhänge der verschiedenen Vitis-Projekten}
+    \caption{Zusammenhänge der verschiedenen Vitis-Projekten}
+    \label{fig:vitis}
+\end{figure}
 
-Kompiliert wird der Code mit den GCC Compilern. Diese werden mit Vitis mitinstalliert und können von Vitis aus gestartet werden. Der kompilierte Code befindet sich in elf Dateien
+Vitis ist die IDE von Xilinx, um das Prozessorsystem zu programmieren. Vitis bassiert auf der Eclipse IDE. 
+Von Vivado kann man die Hardware exportieren und in Vitis importieren. Mit der importierten Hardware wird ein Plattform-Projekt generiert. Diese Plattform beeinhaltet Domainen und die Domainen wiederum Board Support Packages, welche die Bibliotheken und Peripherietreiber beinhalten. Jede Domaine ist für einen bestimmten Prozessorkern. Es können verschiedene Domainen für die selben Kerne existieren, wobei diese nicht die gleichen Einstellungen der Bibliotheken haben müssen. Zudem gibt es noch zwei spezielle Domainen. Eine Domaine für den First Stage Boot Loader (FSBL) und eine für die Firmware der Platform Management Unit (PMU). Auf Grund von den Plattformen kann man Projekte erstellen. Hier gibt es auch zwei verschiedene Arten. Die Applikations-Projekte und die System-Projekte. Jedes System-Projekt kann mehrere Applikations-Projekte enthalten. Jedoch pro ProcessorKern nur eines. Jedes System-Projekt ist an ein Platform-Projekt gebunden und jedes Applikations-Projekt an eine Domaine und befindet sich in einem System-Projekt.
 
-Mit Hilfe vom Bootgen Tool kann aus den elf-Dateien und Bitfiles generiert werden. Mit diesen kann man den SoC booten.
+Kompiliert wird der Code mit den GCC Compilern. Diese werden mit Vitis mitinstalliert und können von Vitis aus gestartet werden. Der Compiler generiert ELF-Dateien, welche auf den SoC geladen werden können. Die Erfahreung hat gezeigt, dass Vitis stabiler läuft, wenn zuerst das Platform-Projekt compiliert wird und erst danach die System- und Applikations-Projekte. Falls jedoch die Plattform nicht verändert wurde und sie nicht veraltet ist, muss sie nicht notwendig compiliert werden.
+
+Das Bootgen Tool generiert aus den ELF-Dateien und Bitfiles ein bootbares Image. Mit diesen kann man den SoC booten. Dafür muss es entweder auf die SD-Karte geschrieben werden, oder über JTAG auf den SOC geladen werden. Zusätzlich kann mit dem Tool Program Flash das Bootimage auf das externe Flash des SoCs laden. Dafür wird das File über JTAG and das Flash übertragen.
+
+Mit dem Xilinx Software Command-Line Tool (XSCT) können auch Skripte für Vitis geschrieben werden. Die XSCT kann entweder in Vitis geöffnet werden, oder direkt in einem Terminal. Das XSCT basiert wie Vivadoskripts auf TCL.
 
 Die Dokumentation von Vitis ist unter \todo{ref auf doku} zu finden.
 
 \subsection{Schnittstelle zwischen Vivado und Vitis}
 
 
-\subsection{Debugging}
-- Debugging auf dem Chip
-- Die debugging Tools
-    - Hardware-Server
-    - Vivado
-        - ILA
-    - Vitis
-        - Gnu debugger
-
-\subsection{Workflow}
-- Files von Vivado
-- Von Vivado in Vitis exportieren
-- Files von Vitis
-- Do nots (Probleme mit Vitis beschreiben)
-- Skripte
+\subsection{No Gos}
+XSA Datei in Vitis Aktualisieren\\
+Projekte kopieren, da zum Teil absolute Pfade verwendet werden\\
+Bitstream nicht mit Hardware exportieren\\
+Nicht die richtige Reihenfolge im Bootgen Tool\\
+richtige Reihenfolge: -PMU\\
+- FSBL\\
+- Bitfile\\
+- restliche ELF-Files
 
 
 \section{Reflexion}
