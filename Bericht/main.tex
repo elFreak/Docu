@@ -241,14 +241,14 @@ So soll es auf dem endgültigen System aufgebaut sein. Auf dem PE1-Board also de
 
 
 \subsection{ARM Firmware}
-Die Firmware für den ARM Cortex R5 besteht aus vier Teilen. Dem USB-Treiber, dem Daten Kopierer, dem IO-Treiber und der Main Funktion. Den USB-Treiber haben wir von Xilinx übernommen und ein wenig angepasst. Der Daten Kopierer hat eine Struktur, welche die Konfigurationen auf die Register in FPGA schreibt, sobald der USB-Treiber meldet, dass die Konfigurationen geändert wurden. Über den IO-Treiber kann man die LEDs, Taster und Schalter ein- und auslesen, ohne sich Gedanken über die physikalische Anordnung der IOs zu machen. Die Main Funktion verbindet die Blöcke und gibt für Testzwecke Informationen über UART oder die LEDs weiter.
+Die Firmware für den ARM Cortex R5 besteht aus vier Teilen. Dem USB-Treiber, der Daten Kopierer Funktion, dem IO-Treiber und der Main Funktion. Den USB-Treiber haben wir von Xilinx übernommen und ein wenig angepasst. Der Daten Kopierer hat eine Struktur, welche die Konfigurationen auf die Register in FPGA schreibt, sobald der USB-Treiber meldet, dass die Konfigurationen geändert wurden. Über den IO-Treiber kann man die LEDs, Taster und Schalter ein- und auslesen, ohne sich Gedanken über die physikalische Anordnung der IOs zu machen. Die Main Funktion verbindet die Blöcke und gibt für Testzwecke Informationen über UART oder die LEDs weiter.
 
 \subsubsection*{USB-Treiber}
 Der USB-Treiber ist das grösste Modul der ARM-Firmware. Daher wird diese ein wenig genauer beschrieben. Leider hat sich Xilinx nicht viel Aufwand für das Konzept, die Lesbarkeit und die Dokumentation des USB-Treiber gemacht. Daher wird nicht alles genau beschrieben, da ich alles komplet verstehe.
 
 Der USB-Treiber verwendet zum einen den USB-Treiber, welcher im Board Support Package (BSP) im Platform Projekt von Vitis vorhanden ist. Und zum anderen das Beispiel Projekt, welches Xilinx mit dem Treiber mitliefert. Der USB-Treiber des BSPs hat Funktionen und Datenstrukuren, um die Grundlegenden Funktionen des USB-Moduls zu steuern. Das Beispielprojekt implementiert den Softwareteil des USB-Standards und der Massstorage USB-Klasse. Das Beispielprojekt unterstützt den reduzierten SCSI Befehlssatz, um die Massstorage Klasse zu implementieren.
 
-Das Beispielprojekt greift auf die Funktionen des USB-Treibers des BSPs über eine Wrapper-Library zu. Diese Bibliothek gibt ändert die API des USB-Treibers des BSPs. Jedoch greift das Beispielprojekt trotzdem noch direkt auf den USB-Treiber des BSPs zu. 
+Das Beispielprojekt greift auf die Funktionen des USB-Treibers des BSPs über eine Wrapper-Library zu. Diese Bibliothek gibt ändert die API des USB-Treibers des BSPs. Jedoch greift das Beispielprojekt trotzdem noch direkt auf den USB-Treiber des BSPs zu. \todo{MPU und andere Einstellungen beschreiben}
 
 \subsection{AXI FPGA-Module}
 Die AXI FPGA-Module sind Vorlagen von Xilinx. Der AXI-Lite Slave nimmt Daten über das AXI Protokoll entgegen, speichert diese In Registern im FPGA und gibt die Daten wieder aus, wenn einen entsprechenden AXI-Befehl ankommt. Der AXI-Lite Master schreibt sequenziell über AXI auf eine Reihe von Registern und liesst diese anschliessend wieder aus und vergleicht sie mit den geschriebenen Werten. Beide Module implementiereren die AXI-Protokolle, indem sie für jeden Ausgang einen VHDL-Prozess definieren, welcher den Wert des Ausgangs anhand von den Eingängen bestimmt. Wenn die Eingänge zu wenig Information geben um die Zustände des Ausgangs komplet zu beschreiben, führen sie noch Zwischensignale ein.
@@ -307,7 +307,19 @@ Wenn der Ausgang \textbf{WrEn} gesetzt ist, handelt es sich um einen Write-Zugri
 \end{figure}
 
 \subsection{Vivado Projekt}
+Skript
+Top
+Blockdiagramm in IP Integrator
+Contraintfile
+Implementiertes Design
+
+Simulation von Varianteil
+
 \subsection{Vitis Projekt}
+Skript
+Platform
+Applikation
+Main
 
 
 \subsection{Nächste Schritte}
@@ -318,7 +330,9 @@ PC Software schreiben\\
 MGT implementieren
 
 \section{Imager-Emulator Konfiguration}
-Dieses Kapitel beschreibt, wie zusätzliche Konfigurationen hinzugefügt werden können.
+Die Konfigurationen können über USB auf den Imager-Emulator geladen werden. Die Daten sind im RAM in einer C-Struktur gespeichert. Im Moment hat die Struktur vier Einträge. Der \textbf{Enable}-Eintrag kann den Emulator stoppen. Die Idee ist, dass immer wenn der PC neue Konfigurationen und Bilder auf den Emulator lädt, dieses Bit zuerst gelöscht wird und somit der Emulator stoppt. Dies soll mögliche Fehler verhindern, welche wegen unvollständigen Konfigurationen und Bilder entstehen können. Sobald der Emulator vollständig konfiguriert ist, setzt der PC dieses Bit wieder. Der \textbf{n}-Eintrag gibt an wieviele Bilder auf dem Emulator gespeichert sind. Der \textbf{StartAddr}-Eintrag sagt, wo das erste Bild im RAM anfängt. Und der \textbf{Bildgrösse}-Eintrag sagt mit drei Bits welche Bildgrösse die Bilder haben. Somit kann das FPGA ausrechnen, wann das nächste Bild anfängt. Diese Konfigurationen sind an erster Stelle im ersten Sektor des USB-Massenspeichers. Das USB-Massenspeicher Protokoll definiert, dass immer ein Sektor aufs mal gschrieben wird. Ein Sektor ist 512 Byte gross. Sobald im ersten Sektor etwas geschrieben wird, aktuallisiert das ARM-System die Register auf dem FPGA.
+
+Um neue Konfigurationen hinzzufügen muss lediglich die C-Struktur um dîe Konfiguration erweitert werden. Die Funktion, welche die Konfigurationen auf die FPGA-Register schreibt, kopiert dann diese Struktur. Zudem muss diese Struktur in der PC-Applikation nachgebildet sein, damit die Konfigurationen auch in der richtigen Reihenfolge auf den Massenspeicher geschrieben werden.
 
 \section{Entwicklungsumgebung}
 Es gibt zwei Entwicklungsumgebungen (IDE) von Xilinx, um den Zynq Ultrascale+ SoC zu programmieren und zu konfigurieren. Die eine ist Vivado. Vivado ist die IDE um Code für den FPGA zu entwickeln. Mit Vivado kann man IPs im Projekt einfügen, FPGA Code simulieren, syntetisieren, implementieren, den FPGA Konfigurieren und direkt auf dem FPGA debuggen.
