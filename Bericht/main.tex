@@ -317,8 +317,16 @@ Das Vivado Projekt kann mit dem Skript erstellt werden. Das Skript kreiert ein n
 
 Die Top-Datei instantiiert das Blockdiagramm vom IP Integrator und definiert die Namen der Ausgänge, welche an die Pins gehen. Die Constraint-Datei verbindet die Ausgänge der Top-Datei mit den Pins und konfiguriert die Pins entsprechend. 
 
+Im Skript muss der Pfad, wo das Skript liegt aktualisiert werden. Das Skript erstellt anschliessend das Projekt in einem Unterordner, welches wie das Projekt heisst. Die Source-Dateien müssen in einem Unterordner namens "src" liegen.
+
+Das Skript kann mit dem Befehl \textit{source \{Skriptpfad/Skriptname\}} in der TCL-Console in Vivado gstartet werden. Wobei der Skriptpfad und Skriptname dementsprechend ersetzt werden müssen.
+
 \subsection{Vitis Projekt}
-Das Vitis Projekt kann auch mit einem Skript erstellt werden. Das Skript erstellt mit der exportierten XSA-Datei ein Plattform Projekt und kompiliert dieses. Wenn nur ein aktualisierter Bootloader gebraucht wird, reicht es, das Skript bis hier auszuführen. Danach erstellt das Skript die Applikation und kopiert die Sourcefiles hinein. Am Schluss kompliert es die Applikation und erstellt ein Bootimage.
+Das Vitis Projekt kann auch mit einem Skript erstellt werden. Es gibt zwei Skripte. Im beiden muss der Pfad in dem das Skript liegt aktualisiert werden. Die exportierte XSA-Datei muss im gleichen Ordner wie das Skript sein und top.xsa heissen. Zudem braucht es noch einen Ordner namens "Vitis", in welchem Vitis gestertet werden muss, worin danach die XSCT-Console gestartet werden kann. Das erst Skript erstellt die ELF-Dateien für den FSBL und die PMU-Firmware und fügt diese mit dem ELF-File der Applikation und dem Bitstream zu einem bootbren Image zusammen. Die ELF-Datei der Applikation muss auch im selben Ordner sein, wie das Skript.
+
+Das zweite Skript erstellt ein Projekt in Vitis mit der Plattform, dem System und der Applikation. Es compiliert das Plattform-Projekt und importiert die Source-Dateien vom Unterordner "src" in das Applikations-Projekt.  
+
+Das Skript kann mit dem Befehl \textit{source \{Skriptpfad/Skriptname\}} in der XSCT-Console in Vitis gstartet werden. Wobei der Skriptpfad und Skriptname dementsprechend ersetzt werden müssen.
 
 \section{Imager-Emulator Konfiguration}
 Die Konfigurationen können über USB auf den Imager-Emulator geladen werden. Die Daten sind im RAM in einer C-Struktur gespeichert. Im Moment hat die Struktur vier Einträge. Der \textbf{Enable}-Eintrag kann den Emulator stoppen. Die Idee ist, dass immer wenn der PC neue Konfigurationen und Bilder auf den Emulator lädt, dieses Bit zuerst gelöscht wird und somit der Emulator stoppt. Dies soll mögliche Fehler verhindern, welche wegen unvollständigen Konfigurationen und Bilder entstehen können. Sobald der Emulator vollständig konfiguriert ist, setzt der PC dieses Bit wieder. Der \textbf{n}-Eintrag gibt an wieviele Bilder auf dem Emulator gespeichert sind. Der \textbf{StartAddr}-Eintrag sagt, wo das erste Bild im RAM anfängt. Und der \textbf{Bildgrösse}-Eintrag sagt mit drei Bits welche Bildgrösse die Bilder haben. Somit kann das FPGA ausrechnen, wann das nächste Bild anfängt. Diese Konfigurationen sind an erster Stelle im ersten Sektor des USB-Massenspeichers. Das USB-Massenspeicher Protokoll definiert, dass immer ein Sektor aufs mal gschrieben wird. Ein Sektor ist 512 Byte gross. Sobald im ersten Sektor etwas geschrieben wird, aktuallisiert das ARM-System die Register auf dem FPGA.
@@ -332,7 +340,10 @@ Die zweite IDE ist Vitis. Mit Vitis kann man Code für das ARM-System schreiben,
 
 In diesem Projekt wurden die Versionen 2019.2 von Vivado und Vitis verwendet. Es ist die erste Version von Vitis. Vorher wurde die Xilinx SDK verwendet um Code für den ARM zu schreiben. Ab Vivado 2019.2 ist es jedoch nicht mehr möglich Projekte für die SDK zu exportieren, da die SDK und Vitis unterschiedliche Files brauchen um die Hardware, welche mit Vivado generiert wird, zu importieren. Für beide Tools können mit TCL Skripte geschrieben werden.
 
+Die Projekt von Vivado und Vitis beinhalten beide zum Teil absolute Pfade. Daher zeigte die Erfahrung, das die Projekte nicht herumcopiert werden sollten, sondern mit scripts gearbeitet werden soll. 
+
 Mit den beiden Entwicklungsumgebungen kommt noch das Programm DocNav. Diesem Programm beinhaltet alle Dokumentationen von Xilinx.
+
 \subsection{Vivado}
 Vivado ist die IDE für die Entwicklung von FPGAs, sie versteht VHDL und Verilog. Vivado kann entweder im Projektmodus oder nicht im Projektmodus verwendet werden. In diesem Projekt verwenden wir Vivado nur im Projektmodus. Alle Befehle können enteder im GUI oder in der TCL Konsole eingegeben werden. Somit ist Vivado vollständig skriptbar. Ein Vivadoprojekt besitzt ein Top-Modul, welches alle anderen Module und Blockdiagramme hinzufügt.
 
@@ -372,16 +383,9 @@ Vitis erstellt seine Plattform aufgrund der exportierten XSA-Datei von Vivado. D
 Wenn eine Änderung im Vivadoprojekt stattfindet, müsste die Plattform aktualisiert werden. Jedoch zeigte die Erfahrung, dass die Plattform-Aktualisier-Funktion von Vitis nicht zuverlässig funktioniert. Daher wird empfohlen ein neues Projekt mittels einem Skript zu erstellen und mit dem weiterarbeiten. Beim exportieren der Hardware in Vivado kann der Bitstream mit exportiert werden oder nicht. Auch hier wird empfohlen den Bitstream mit der Hardware zu exportieren und anschliessend in Vitis importieren, da sich in der Erfahrung ansonsten komplikationen ergaben.
 
 
-\subsection{No Gos}
-Projekte kopieren, da zum Teil absolute Pfade verwendet werden\\
-Nicht die richtige Reihenfolge im Bootgen Tool\\
-richtige Reihenfolge: -PMU\\
-- FSBL\\
-- Bitfile\\
-- restliche ELF-Files
-
-
 \section{Reflexion}
+Dieses Projekt kann nicht als voller Erfolg gewertet werden, da nicht alle am Anfang gesetzten Ziele erreicht wurden. Die Ziele die nicht erreicht wurden sind folgende. Ein Grundgerüst der PC-Applikation mit C\# schreiben, welche erste Konfigurationen und Bitmap Bilder auf den Imager-Emulator laden kann. Und die Inbetriebnahme der im Ultrascale+ internen MGTs. Blablabla wieso\dots
+
 
 
 
