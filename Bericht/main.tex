@@ -249,10 +249,11 @@ Der \textit{USB-Treiber} ist das grösste Modul der ARM-Firmware. Daher wird die
 Der \textit{USB-Treiber} verwendet zum einen den USB-Treiber, welcher im Board Support Package (BSP) im Platform Projekt von Vitis vorhanden ist. Und zum anderen das Beispiel Projekt, welches Xilinx mit dem Treiber mitliefert. Der USB-Treiber des BSPs hat Funktionen und Datenstrukuren, um die Grundlegenden Funktionen des USB-Moduls zu steuern. Das Beispielprojekt implementiert den Softwareteil des USB-Standards und der Massstorage USB-Klasse. Das Beispielprojekt unterstützt den reduzierten SCSI Befehlssatz, um die Massstorage Klasse zu implementieren.
 
 Das Beispielprojekt greift auf die Funktionen des USB-Treibers des BSPs über eine Wrapper-Library zu. Diese Bibliothek ändert die API des USB-Treibers des BSPs. Jedoch greift das Beispielprojekt trotzdem noch direkt auf den USB-Treiber des BSPs zu. 
+
+Am Beispielprojekt wurde nicht viel gändert. Zum einen wurde in der Datei \textit{xusb\_class\_storage.c} hineingefügt, dass wenn in Sector Eins geschrieben wird, dass das Flag \textit{configWrite} gesetzt wird. Somit wird der Daten Kopier Funktion mitgeteilt, das neue Konfigurationsdaten vorhanden sind. Die grösse des Speichers, die der USB-Treiber als Massenspeicher hat kann in der H-Datei \textit{xusb\_class\_storage.h} unter VFLASH\_SIZE eingestellt werden. Im Moment ist es auf 1.5GB eingestellt.
+Die USB Strukturen, welche dem Host mitteilen, was das USB Device für ein Gerät ist sind unter \textit{xusb\_ch9\_storage.ch} zu finden.
 \subsubsection*{ARM Konfiguration}
 \todo{MPU und andere Einstellungen beschreiben}
-
-\subsection{AXI Protokoll}
 
 \subsection{AXI FPGA-Module}
 \label{sec:axi}
@@ -367,13 +368,12 @@ Mit dem Xilinx Software Command-Line Tool (XSCT) können auch Skripte für Vitis
 Die Dokumentation von Vitis ist unter \todo{ref auf doku} zu finden.
 
 \subsection{Schnittstelle zwischen Vivado und Vitis}
-
+Vitis erstellt seine Plattform aufgrund der exportierten XSA-Datei von Vivado. Diese Datei beinhaltet die Konfiguration für das ARM-System, welches im Zynq-IP eingestellt wurde. Genauer gesagt ist die XSA-Datei ein ZIP-Archive. Die Konfiguration heisst psu\_init und existiert als C-Modul und als TCL Skript. Das C-Modul wird vom FSBL verwendet, um das ARM-System zu initialisieren und das TCL-Skripte verwendet Vitis um über JTAG das System ohne FSBL zu konfigurieren. 
+Wenn eine Änderung im Vivadoprojekt stattfindet, müsste die Plattform aktualisiert werden. Jedoch zeigte die Erfahrung, dass die Plattform-Aktualisier-Funktion von Vitis nicht zuverlässig funktioniert. Daher wird empfohlen ein neues Projekt mittels einem Skript zu erstellen und mit dem weiterarbeiten. Beim exportieren der Hardware in Vivado kann der Bitstream mit exportiert werden oder nicht. Auch hier wird empfohlen den Bitstream mit der Hardware zu exportieren und anschliessend in Vitis importieren, da sich in der Erfahrung ansonsten komplikationen ergaben.
 
 
 \subsection{No Gos}
-XSA Datei in Vitis Aktualisieren\\
 Projekte kopieren, da zum Teil absolute Pfade verwendet werden\\
-Bitstream nicht mit Hardware exportieren\\
 Nicht die richtige Reihenfolge im Bootgen Tool\\
 richtige Reihenfolge: -PMU\\
 - FSBL\\
