@@ -9,6 +9,9 @@
 \maketitle
 \tableofcontents
 
+\section{Abstrakt}
+Die Röntgengeräte der Firma Varian können Pixelfehler in den Bildern erkennen und korrigieren. Um dieses System in einem Testaufbau zu testen, braucht es einen Sensor, welcher deterministisch die zufallsbedingten Pixelfehler generiert und an die Algorithmen sendet. Einen solchen Emulator des Röntgensensors soll dieses Projekt entwickeln. Das Herzstück dieses Projektes ist ein Xilinx Zynq Ultrascale+ SoC. Ein Computer kann über USB 2.0 Daten auf das RAM des ARM-Systems schreiben und das ARM-System kann mit dem FPGA-System über AXI komunizieren. 
+
 \section{Einleitung}
 Dieses Dokument ist ein Teil der Dokumentation des Projektes Imager-Emu\-lator. Dieses Projekt besteht aus drei Teilprojekten. 
 Genauer gesagt besteht es aus zwei Bachelor-Thesen und einem Projekt 5 (P5) des Studienganges Elektro- und Informationstechnik der Fachhochschule Nordwestschweiz. 
@@ -293,7 +296,7 @@ Dieses Verhalten ist mittels einer Finite State Machine (FSM) gelöst. Die FSM i
 \end{figure}
 
 \subsubsection*{CommandProcessor}
-Das Modul \textit{CommandProcessor} beinhaltet das Modul \textit{RxPacketframing}.Dieses beinhaltet wiederum zwei Fifos. Eines direkt am Rx-Eingang vom SerDes, welches zwischen dem FPGA-Takt und dem SerDes-Takt wechselt. Und eines um die Daten für den \textit{CommandProcessor} bereit zu stellen. Das erste Fifo ist nur aktiv, wenn das SFP und der SerDes parat sind. Dafür sind die Eingänge \textbf{nSerdesLock} und \textbf{OptoSD}. Zudem wird eine UND-Verküpfung der beiden Signale am Ausgang \textbf{OptlinkReady} ausgegeben. Das Modul \textit{RxPacketframing} unterscheidet zwischen den drei verschiedenen Befehlen des XI-Computers. Ein Trigger-Befehl gibt es direkt an den Ausgang \textbf{Triggerlines}. Und die Read- und Write-Befehle schreibt es in das zweite Fifo. Wenn das erste Bit eine "0" ist, handelt es sich um einen Read-Befehl und ansonsten um einen Write-Befehl. Die nächsten sechs Bits im Fifo geben die Adresse de Read- oder Write-Zugriffs an. Und die zwei Byte sind nur für den Write-Befehl relevant und entahlten die zu schreibenden Daten. Dieses Verhalten ist in der FSM in Abbildung \ref{fig:fsm_tx_packet_framing} zu sehen.
+Das Modul \textit{CommandProcessor} beinhaltet das Modul \textit{RxPacketframing}.Dieses beinhaltet wiederum zwei Fifos. Eines direkt am Rx-Eingang vom SerDes, welches zwischen dem FPGA-Takt und dem SerDes-Takt wechselt. Und eines um die Daten für den \textit{CommandProcessor} bereit zu stellen. Das erste Fifo ist nur aktiv, wenn das SFP und der SerDes parat sind. Dafür sind die Eingänge \textbf{nSerdesLock} und \textbf{OptoSD}. Zudem wird eine UND-Verküpfung der beiden Signale am Ausgang \textbf{OptlinkReady} ausgegeben. Das Modul \textit{RxPacketframing} unterscheidet zwischen den drei verschiedenen Befehlen des XI-Computers. Ein Trigger-Befehl gibt es direkt an den Ausgang \textbf{Triggerlines}. Und die Read- und Write-Befehle schreibt es in das zweite Fifo. Wenn das erste Bit eine "0" ist, handelt es sich um einen Read-Befehl und ansonsten um einen Write-Befehl. Die nächsten sechs Bits im Fifo geben die Adresse de Read- oder Write-Zugriffs an. Und die zwei Byte sind nur für den Write-Befehl relevant und enthalten die zu schreibenden Daten. Dieses Verhalten ist in der FSM in Abbildung \ref{fig:fsm_tx_packet_framing} zu sehen.
 
 \begin{figure}[tb]
     \includegraphics[width=\linewidth]{drawio/fsm_rx_packet_framing}
@@ -384,7 +387,11 @@ Wenn eine Änderung im Vivadoprojekt stattfindet, müsste die Plattform aktualis
 
 
 \section{Reflexion}
-Dieses Projekt kann nicht als voller Erfolg gewertet werden, da nicht alle am Anfang gesetzten Ziele erreicht wurden. Die Ziele die nicht erreicht wurden sind folgende. Ein Grundgerüst der PC-Applikation mit C\# schreiben, welche erste Konfigurationen und Bitmap Bilder auf den Imager-Emulator laden kann. Und die Inbetriebnahme der im Ultrascale+ internen MGTs. Blablabla wieso\dots
+Dieses Projekt ist die Grundlage, auf welcher das nächste Projekt gut aufbauen kann. Dieses Projekt hat das XU5 SoC-Modul in Betrieb genommen und die Schnittstellen zum laufen gebracht. Dafür wurden die Dokumentationen ausgiebig durchforscht, Projekte in den Entwicklungsumgebungen erstellt, Code geschrieben und dieser getestet. Und dieser Vorgang wurde immer und immer wieder durchlaufen. Somit kann nun der Computer über USB auf das RAM im Ultrascale schreiben, das Prozessorsystem im SoC kann über AXI auf das FPGA schreiben und das FPGA-System kann auch über AXI in das RAM schreiben.
+
+Jedoch wie jedes Projekt, kam es auch in diesem zu Stolpersteinen. Al erstes war der USB-Treiber komplexer als an Anfang angenommen, als zweites liefen die AXI-Schnittstellen zuerst nicht, und als letztes funktionierten die Projekte nicht mehr, als sie auf einen anderen Computer kopiert wurden.
+
+Die nächsten Schritte sind: Die Startupsequenz in die FPGA-Module der Varian einzubauen. Das FPGA-Modul Datenaufbereitung zu implementieren. Die PC Applikation zu schreiben. Und die MGT in Betrieb zu nehmen.
 
 
 
