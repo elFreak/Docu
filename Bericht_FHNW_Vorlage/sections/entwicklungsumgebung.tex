@@ -14,20 +14,21 @@ Vivado ist die IDE für die Entwicklung von FPGAs, sie versteht VHDL und Verilog
 
 Vivado besteht aus verschiedenen Teilprogrammen. Diese sind der IP-Integrator, der Simulator, der Synthetisierer, der Implementierer und der Hardwaremanager.
 
-Die Dokumentation von Vivado ist auf verschiedene Dokumente aufgeteilt. Zum Starten ist die "Vivado Design Suite User Guide: Using the Vivado IDE" gut geeignet. Diese Dokumentation referenziert in Kapitel zwei auf die weiteren Dokumentationen der einzelnen Unterprogramme von Vivado. \todo{ref auf Doku}
+Die Dokumentation von Vivado ist auf verschiedene Dokumente aufgeteilt. Zum Starten ist die \textit{Vivado Design Suite User Guide: Using the Vivado IDE} gut geeignet. Diese Dokumentation referenziert in Kapitel zwei auf die weiteren Dokumentationen der einzelnen Unterprogramme von Vivado. \cite{vivado}
 
-Der IP-Integrator ist das Tool um die Intellectual Properties (IP) zu instanziieren. Dafür erstellt der IP-Integrator ein Blockdiagramm, welches ein VHDL-Modul einbinden kann. Das Blockdiagramm kann auch selber erstellt IPs und VHDL-Module beinhalten, wobei hier die Grenze zwischen IP und VHDL-Modul schwimmend sind. Der Wizard "Create and Package new IP" kann die eigene Module in IPs umwandeln. Man kann jedoch VHDL-Module im Diagramm hinzufügen, ohne sie zu IPs generieren zu lassen. Zudem hat der Wizard Vorlagen für AXI-Schnittstellen. Diese sind in Kapitel \ref{sec:axi} genauer beschrieben. Der Wizard kann man in der Menuleiste unter Tools starten. Das IP \textit{zynq\_ultra\_ps} instanziiert das Prozessorsystem des Ultrascales. Somit kann man dieses konfigurieren und die anderen IPs an die Schnittstellen zum PS anhängen. Die Konfigurationen exportiert Vivado mit der XSA-Datei, mit welchem Vitis dann die Plattform generiert. \todo{ref auf Doku}
+Der IP-Integrator ist das Tool um die Intellectual Properties (IP) zu instanziieren. Dafür erstellt der IP-Integrator ein Blockdiagramm, welches ein VHDL-Modul einbinden kann. Das Blockdiagramm kann auch selber erstellt IPs und VHDL-Module beinhalten, wobei hier die Grenze zwischen IP und VHDL-Modul schwimmend sind. Der Wizard "Create and Package new IP" kann die eigene Module in IPs umwandeln. Man kann jedoch VHDL-Module im Diagramm hinzufügen, ohne sie zu IPs generieren zu lassen. Zudem hat der Wizard Vorlagen für AXI-Schnittstellen. Diese sind in Kapitel \ref{sec:axi} genauer beschrieben. Der Wizard kann man in der Menuleiste unter Tools starten. Das IP \textit{zynq\_ultra\_ps} instanziiert das Prozessorsystem des Ultrascales. Somit kann man dieses konfigurieren und die anderen IPs an die Schnittstellen zum PS anhängen. Die Konfigurationen exportiert Vivado mit der XSA-Datei, mit welchem Vitis dann die Plattform generiert. \cite{vivado_ip}\cite{vivado_ip_integrator}
 
-Für die Simulation können mehrere Sets definiert werden, welche man von einander getrennt aufrufen kann. Die Testbenches können direct auf die Module im Projekt zugreifen. \todo{ref auf Doku} 
+Für die Simulation können mehrere Sets definiert werden, welche man von einander getrennt aufrufen kann. Die Testbenches können direct auf die Module im Projekt zugreifen. \cite{vivado_sim}
 
-Der Synthetisierer und Implementierer generieren das Bitfile für das Konfigurieren des FPGAs. Dabei ist der Synthetisierer der Hardware unabhängige Teil und der Implementierer der Hardware abhängige. Die XDC-Constraint-Dateien konfigurieren diese beiden Tools. In den Constraint-Dateien müssen auch die Zuweisung der Ein- und Ausgänge des Top-Moduls zu den Pins und deren Einstellungen stattfinden. \todo{ref auf Doku Imp, Synt, Const}
+Der Synthetisierer und Implementierer generieren das Bitfile für das Konfigurieren des FPGAs. Dabei ist der Synthetisierer der Hardware unabhängige Teil und der Implementierer der Hardware abhängige. Die XDC-Constraint-Dateien konfigurieren diese beiden Tools. In den Constraint-Dateien müssen auch die Zuweisung der Ein- und Ausgänge des Top-Moduls zu den Pins und deren Einstellungen stattfinden. \cite{vivado_const}\cite{vivado_synth}\cite{vivado_imp}
 
-Der Hardware Manager kann den Bitstream direkt auf den FPGA laden und debuggen. Dafür braucht es jedoch noch einen oder mehrere Integrated Logic Analyser (ILA) IPs, welche im Blockdiagramm eingefügt werden können. Mit diesen kann man auf ein Trigger die gewünschten Signale für eine gewisse Zeit anschauen. \todo{ref auf Doku HM, ILA}
+Der Hardware Manager kann den Bitstream direkt auf den FPGA laden und debuggen. Dafür braucht es jedoch noch einen oder mehrere Integrated Logic Analyser (ILA) IPs, welche im Blockdiagramm eingefügt werden können. Mit diesen kann man auf ein Trigger die gewünschten Signale für eine gewisse Zeit anschauen. \cite{vivado_debug}\cite{ila}
 
 \subsection{Vitis}
 
 \begin{figure}[tb]
-    \missingfigure{Zusammenhänge der verschiedenen Vitis-Projekten}
+    \centering
+    \includegraphics[width=\linewidth]{vitis}
     \caption{Zusammenhänge der verschiedenen Vitis-Projekten}
     \label{fig:vitis}
 \end{figure}
@@ -41,7 +42,7 @@ Das Bootgen Tool generiert aus den ELF-Dateien und Bitfiles ein bootbares Image.
 
 Mit dem Xilinx Software Command-Line Tool (XSCT) können auch Skripte für Vitis geschrieben werden. Die XSCT kann entweder in Vitis geöffnet werden, oder direkt in einem Terminal. Das XSCT basiert wie Vivadoskripts auf TCL.
 
-Die Dokumentation von Vitis ist unter \todo{ref auf doku} zu finden.
+Die Dokumentation von Vitis ist online zu finden. \cite{vitis}
 
 \subsection{Schnittstelle zwischen Vivado und Vitis}
 Vitis erstellt seine Plattform aufgrund der exportierten XSA-Datei von Vivado. Diese Datei beinhaltet die Konfiguration für das ARM-System, welches im Zynq-IP eingestellt wurde. Genauer gesagt ist die XSA-Datei ein ZIP-Archive. Die Konfiguration heisst psu\_init und existiert als C-Modul und als TCL Skript. Das C-Modul wird vom FSBL verwendet, um das ARM-System zu initialisieren und das TCL-Skripte verwendet Vitis um über JTAG das System ohne FSBL zu konfigurieren. 
