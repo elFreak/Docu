@@ -1,0 +1,6 @@
+\section{Reflexion}
+Dieses Projekt ist die Grundlage, auf welcher das nächste Projekt gut aufbauen kann. Dieses Projekt hat das XU5 SoC-Modul in Betrieb genommen und die Schnittstellen zum laufen gebracht. Dafür wurden die Dokumentationen ausgiebig durchforscht, Projekte in den Entwicklungsumgebungen erstellt, Code geschrieben und dieser getestet. Und dieser Vorgang wurde immer und immer wieder durchlaufen. Somit kann nun der Computer über USB auf das RAM im Ultrascale schreiben, das Prozessorsystem im SoC kann über AXI auf das FPGA schreiben und das FPGA-System kann auch über AXI in das RAM schreiben.
+
+Jedoch wie jedes Projekt, kam es auch in diesem zu Stolpersteinen. Al erstes war der USB-Treiber komplexer als an Anfang angenommen, als zweites liefen die AXI-Schnittstellen zuerst nicht, und als letztes funktionierten die Projekte nicht mehr, als sie auf einen anderen Computer kopiert wurden.
+
+Die nächsten Schritte sind: Die Startupsequenz in die FPGA-Module der Varian einzubauen. Das FPGA-Modul Datenaufbereitung zu implementieren. Die PC Applikation zu schreiben. Und die MGT in Betrieb zu nehmen.

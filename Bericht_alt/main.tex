@@ -253,7 +253,7 @@ Der \textit{USB-Treiber} verwendet zum einen den USB-Treiber, welcher im Board S
 
 Das Beispielprojekt greift auf die Funktionen des USB-Treibers des BSPs über eine Wrapper-Library zu. Diese Bibliothek ändert die API des USB-Treibers des BSPs. Jedoch greift das Beispielprojekt trotzdem noch direkt auf den USB-Treiber des BSPs zu. 
 
-Am Beispielprojekt wurde nicht viel gändert. Zum einen wurde in der Datei \textit{xusb\_class\_storage.c} hineingefügt, dass wenn in Sector Eins geschrieben wird, dass das Flag \textit{configWrite} gesetzt wird. Somit wird der Daten Kopier Funktion mitgeteilt, das neue Konfigurationsdaten vorhanden sind. Die grösse des Speichers, die der USB-Treiber als Massenspeicher hat kann in der H-Datei \textit{xusb\_class\_storage.h} unter VFLASH\_SIZE eingestellt werden. Im Moment ist es auf 1.5GB eingestellt.
+Am Beispielprojekt wurde nicht viel geändert. Zum einen wurde in der Datei \textit{xusb\_class\_storage.c} hineingefügt, dass wenn in Sector Eins geschrieben wird, dass das Flag \textit{configWrite} gesetzt wird. Somit wird der Daten Kopier Funktion mitgeteilt, das neue Konfigurationsdaten vorhanden sind. Die grösse des Speichers, die der USB-Treiber als Massenspeicher hat kann in der H-Datei \textit{xusb\_class\_storage.h} unter VFLASH\_SIZE eingestellt werden. Im Moment ist es auf 1.5GB eingestellt.
 Die USB Strukturen, welche dem Host mitteilen, was das USB Device für ein Gerät ist sind unter \textit{xusb\_ch9\_storage.ch} zu finden.
 \subsubsection*{ARM Konfiguration}
 \todo{MPU und andere Einstellungen beschreiben}
